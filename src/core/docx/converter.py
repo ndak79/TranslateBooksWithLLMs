@@ -6,13 +6,46 @@ Uses:
 - python-docx: Metadata extraction + DOCX reconstruction
 """
 
+import base64
+import binascii
 import io
+import os
+import re
+import tempfile
 import mammoth
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from typing import Tuple, Dict, Any, Optional
 from lxml import etree
+
+
+_W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+_M_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+_XML_NS = 'http://www.w3.org/XML/1998/namespace'
+
+# Marker injected in place of OMML equations before mammoth runs.
+# Mammoth drops <m:oMath> entirely; we replace each with this text marker so
+# it survives DOCX -> HTML -> DOCX, then we re-inject the original OMML.
+_EQ_MARKER_PREFIX = '__TTBLLEQ'
+_EQ_MARKER_SUFFIX = 'EQTTBLL__'
+_EQ_MARKER_REGEX = re.compile(
+    re.escape(_EQ_MARKER_PREFIX) + r'(\d+)' + re.escape(_EQ_MARKER_SUFFIX)
+)
+
+# In the HTML returned by to_html(), each equation appears as a self-closing
+# <eq id="N"/> tag. Because TagPreserver groups anything matching <[^>]+>
+# into [idN] placeholders that the LLM treats as opaque tokens, the equation
+# never reaches the LLM as raw text. from_html() converts these tags back to
+# text markers before the HTML->DOCX rebuild so _restore_equations can splice
+# the original OMML back in.
+_EQ_TAG_REGEX = re.compile(r'<eq id="(\d+)"\s*/>')
+
+_OMML_XPATH = etree.XPath(
+    './/m:oMathPara | .//m:oMath[not(ancestor::m:oMathPara)]',
+    namespaces={'m': _M_NS},
+)
+_WT_XPATH = etree.XPath('.//w:t', namespaces={'w': _W_NS})
 
 
 class DocxHtmlConverter:
@@ -35,21 +68,46 @@ class DocxHtmlConverter:
             - html_content: Semantic HTML (<p>, <strong>, <em>, etc.)
             - metadata: Dict with styles, fonts, page settings
         """
-        # 1. Conversion via mammoth (clean semantic HTML)
-        with open(docx_path, 'rb') as docx_file:
-            result = mammoth.convert_to_html(docx_file)
-            html_content = result.value
+        # 1a. Pre-extract OMML equations into markers (mammoth drops them).
+        patched_path, equations = self._replace_equations_with_markers(docx_path)
 
-            # Log warnings if any
-            if result.messages:
-                warnings = [msg.message for msg in result.messages]
-                # Store warnings in metadata for potential debugging
+        try:
+            # 1b. Conversion via mammoth (clean semantic HTML)
+            with open(patched_path, 'rb') as docx_file:
+                result = mammoth.convert_to_html(docx_file)
+                html_content = result.value
 
-        # 2. Extract metadata via python-docx
-        doc = Document(docx_path)
-        metadata = self._extract_metadata(doc)
+                # Log warnings if any
+                if result.messages:
+                    warnings = [msg.message for msg in result.messages]
+                    # Store warnings in metadata for potential debugging
 
-        return html_content, metadata
+            # 1c. Promote raw equation markers to HTML tags so TagPreserver
+            # protects them as opaque [idN] placeholders. Without this the
+            # LLM sees the literal text "__TTBLLEQ0EQTTBLL__" and may
+            # mangle, translate or drop it.
+            if equations:
+                html_content = _EQ_MARKER_REGEX.sub(
+                    r'<eq id="\1"/>', html_content
+                )
+
+            # 2. Extract metadata via python-docx (use original to keep page settings)
+            doc = Document(docx_path)
+            metadata = self._extract_metadata(doc)
+            metadata['equations'] = equations
+            # Preserve original inline image dimensions in document order;
+            # mammoth strips them from the HTML, so we restore at rebuild time.
+            metadata['image_dimensions'] = [
+                (shape.width, shape.height) for shape in doc.inline_shapes
+            ]
+
+            return html_content, metadata
+        finally:
+            if patched_path != docx_path and os.path.exists(patched_path):
+                try:
+                    os.remove(patched_path)
+                except OSError:
+                    pass
 
     def from_html(
         self,
@@ -72,6 +130,13 @@ class DocxHtmlConverter:
             metadata: Original document metadata (styles, fonts, etc.)
             output_path: Path to output DOCX file
         """
+        # Reverse the equation-tag substitution done in to_html so the rest
+        # of the rebuild pipeline (which expects raw text markers) is unchanged.
+        html_content = _EQ_TAG_REGEX.sub(
+            lambda m: f'{_EQ_MARKER_PREFIX}{m.group(1)}{_EQ_MARKER_SUFFIX}',
+            html_content,
+        )
+
         # Parse HTML
         html_tree = etree.HTML(html_content)
 
@@ -80,6 +145,11 @@ class DocxHtmlConverter:
 
         # Apply page metadata (page size, margins, etc.)
         self._apply_page_metadata(doc, metadata)
+
+        # Queue of (width, height) pairs in document order, consumed by
+        # _add_image_run as it embeds each <img>. mammoth drops sizing info
+        # from the HTML, so we replay it from the original DOCX.
+        self._image_dims_queue = list(metadata.get('image_dimensions', []))
 
         # Convert HTML → DOCX paragraphs
         if html_tree is not None:
@@ -90,6 +160,121 @@ class DocxHtmlConverter:
 
         # Save
         doc.save(output_path)
+
+        # Restore OMML equations (replace text markers with original OMML XML)
+        equations = metadata.get('equations') if metadata else None
+        if equations:
+            self._restore_equations(output_path, equations)
+
+    def _replace_equations_with_markers(
+        self, docx_path: str
+    ) -> Tuple[str, Dict[int, str]]:
+        """
+        Pre-process a DOCX so OMML equations survive the mammoth round-trip.
+
+        Mammoth drops <m:oMath> / <m:oMathPara> entirely. We extract each
+        outermost equation, store its XML, and replace it with a <w:r><w:t>
+        containing a unique text marker. Mammoth then carries the marker
+        through into the HTML output, where it can later be matched by
+        _restore_equations on the rebuilt DOCX.
+
+        Returns:
+            (path_to_use, equations_dict)
+            - path_to_use: original path if no equations, else a temp DOCX
+            - equations_dict: {idx: serialized_omml_xml}
+        """
+        doc = Document(docx_path)
+        body = doc.element.body
+
+        omml_elements = _OMML_XPATH(body)
+
+        if not omml_elements:
+            return docx_path, {}
+
+        equations: Dict[int, str] = {}
+        for idx, eq in enumerate(omml_elements):
+            equations[idx] = etree.tostring(eq, encoding='unicode')
+
+            new_r = etree.Element(f'{{{_W_NS}}}r')
+            new_t = etree.SubElement(new_r, f'{{{_W_NS}}}t')
+            new_t.text = f'{_EQ_MARKER_PREFIX}{idx}{_EQ_MARKER_SUFFIX}'
+            new_t.set(f'{{{_XML_NS}}}space', 'preserve')
+
+            parent = eq.getparent()
+            eq_idx = list(parent).index(eq)
+            parent.remove(eq)
+            parent.insert(eq_idx, new_r)
+
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix='.docx')
+        os.close(tmp_fd)
+        doc.save(tmp_path)
+        return tmp_path, equations
+
+    def _restore_equations(
+        self, docx_path: str, equations: Dict[int, str]
+    ) -> None:
+        """
+        Replace text markers in the saved DOCX with the original OMML XML.
+
+        A marker may sit alone in a <w:t>, or share its run with surrounding
+        text (mammoth often consolidates adjacent runs). In the second case
+        we split the run into [text-prefix, OMML, text-suffix] within the
+        same paragraph.
+        """
+        doc = Document(docx_path)
+        body = doc.element.body
+
+        for t_elem in list(_WT_XPATH(body)):
+            text = t_elem.text
+            if not text or _EQ_MARKER_PREFIX not in text:
+                continue
+
+            matches = list(_EQ_MARKER_REGEX.finditer(text))
+            if not matches:
+                continue
+
+            r_elem = t_elem.getparent()
+            if r_elem is None:
+                continue
+            p_elem = r_elem.getparent()
+            if p_elem is None:
+                continue
+
+            r_idx = list(p_elem).index(r_elem)
+
+            new_elements = []
+            cursor = 0
+            for m in matches:
+                before = text[cursor:m.start()]
+                if before:
+                    rb = etree.Element(f'{{{_W_NS}}}r')
+                    tb = etree.SubElement(rb, f'{{{_W_NS}}}t')
+                    tb.text = before
+                    tb.set(f'{{{_XML_NS}}}space', 'preserve')
+                    new_elements.append(rb)
+
+                eq_idx = int(m.group(1))
+                omml_xml = equations.get(eq_idx)
+                if omml_xml:
+                    try:
+                        new_elements.append(etree.fromstring(omml_xml))
+                    except etree.XMLSyntaxError:
+                        pass
+                cursor = m.end()
+
+            after = text[cursor:]
+            if after:
+                ra = etree.Element(f'{{{_W_NS}}}r')
+                ta = etree.SubElement(ra, f'{{{_W_NS}}}t')
+                ta.text = after
+                ta.set(f'{{{_XML_NS}}}space', 'preserve')
+                new_elements.append(ra)
+
+            p_elem.remove(r_elem)
+            for offset, elem in enumerate(new_elements):
+                p_elem.insert(r_idx + offset, elem)
+
+        doc.save(docx_path)
 
     def _extract_metadata(self, doc: Document) -> Dict[str, Any]:
         """
@@ -189,6 +374,8 @@ class DocxHtmlConverter:
             self._convert_table(doc, element, metadata)
         elif tag == 'br':
             doc.add_paragraph()  # Empty paragraph for line break
+        elif tag == 'img':
+            self._add_image_run(doc.add_paragraph(), element)
         # Skip other tags (div, span handled within paragraphs)
 
     def _convert_paragraph(
@@ -285,6 +472,8 @@ class DocxHtmlConverter:
                 text = self._get_text_content(child)
                 run = paragraph.add_run(text)
                 run.underline = True
+            elif child.tag == 'img':
+                self._add_image_run(paragraph, child)
             else:
                 # For other tags, just extract text
                 text = self._get_text_content(child)
@@ -293,6 +482,42 @@ class DocxHtmlConverter:
             # Handle tail text (text after closing tag)
             if child.tail:
                 paragraph.add_run(child.tail)
+
+    def _add_image_run(self, paragraph, img_element: etree._Element) -> None:
+        """
+        Embed a base64 data-URI <img> into the paragraph as an inline picture.
+
+        Mammoth emits images as `<img src="data:image/<fmt>;base64,...">`.
+        Without this, images would be silently dropped on DOCX reconstruction.
+        Non-data-URI sources (http://, file://) are skipped — they cannot be
+        reliably resolved at translation time.
+        """
+        src = img_element.get('src', '')
+        if not src.startswith('data:'):
+            return
+        try:
+            header, payload = src.split(',', 1)
+        except ValueError:
+            return
+        if ';base64' not in header:
+            return
+        try:
+            image_bytes = base64.b64decode(payload)
+        except (binascii.Error, ValueError):
+            return
+
+        width = height = None
+        queue = getattr(self, '_image_dims_queue', None)
+        if queue:
+            width, height = queue.pop(0)
+
+        try:
+            paragraph.add_run().add_picture(
+                io.BytesIO(image_bytes), width=width, height=height
+            )
+        except Exception:
+            # python-docx raises UnrecognizedImageError for unsupported formats
+            return
 
     def _get_text_content(self, element: etree._Element) -> str:
         """Extract all text content from an element and its children."""
