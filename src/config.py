@@ -85,14 +85,41 @@ if _debug_mode:
     _config_logger.debug(f"📁 load_dotenv() returned: {_dotenv_result}")
     _config_logger.debug(f"📁 Loaded .env from: {_env_file.absolute()}")
 
-# Load from environment variables with defaults
-# Ollama endpoint configuration (provider-specific)
-OLLAMA_API_ENDPOINT = os.getenv('OLLAMA_API_ENDPOINT', 'http://localhost:11434/api/generate')
-# OpenAI-compatible endpoint configuration (for OpenAI, LM Studio, etc.)
-OPENAI_API_ENDPOINT = os.getenv('OPENAI_API_ENDPOINT', 'https://api.openai.com/v1/chat/completions')
-# Legacy API_ENDPOINT for backward compatibility (defaults to Ollama endpoint)
-API_ENDPOINT = os.getenv('API_ENDPOINT', OLLAMA_API_ENDPOINT)
-DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'qwen3:14b')
+# Settings that the web UI can update at runtime via /api/settings.
+# Listed once so the initial load and reload_config() stay in lockstep.
+# Format: (attribute_name, env_var_name, default_value)
+_RELOADABLE_ENV_SETTINGS = (
+    ('OLLAMA_API_ENDPOINT', 'OLLAMA_API_ENDPOINT', 'http://localhost:11434/api/generate'),
+    ('OPENAI_API_ENDPOINT', 'OPENAI_API_ENDPOINT', 'https://api.openai.com/v1/chat/completions'),
+    ('DEFAULT_MODEL',       'DEFAULT_MODEL',       'qwen3:14b'),
+    ('LLM_PROVIDER',        'LLM_PROVIDER',        'ollama'),
+    ('GEMINI_API_KEY',      'GEMINI_API_KEY',      ''),
+    ('GEMINI_MODEL',        'GEMINI_MODEL',        'gemini-2.0-flash'),
+    ('OPENAI_API_KEY',      'OPENAI_API_KEY',      ''),
+    ('OPENROUTER_API_KEY',  'OPENROUTER_API_KEY',  ''),
+    ('OPENROUTER_MODEL',    'OPENROUTER_MODEL',    'anthropic/claude-sonnet-4'),
+    ('MISTRAL_API_KEY',     'MISTRAL_API_KEY',     ''),
+    ('MISTRAL_MODEL',       'MISTRAL_MODEL',       'mistral-large-latest'),
+    ('DEEPSEEK_API_KEY',    'DEEPSEEK_API_KEY',    ''),
+    ('DEEPSEEK_MODEL',      'DEEPSEEK_MODEL',      'deepseek-chat'),
+    ('POE_API_KEY',         'POE_API_KEY',         ''),
+    ('POE_MODEL',           'POE_MODEL',           'Claude-Sonnet-4'),
+    ('NIM_API_KEY',         'NIM_API_KEY',         ''),
+    ('NIM_MODEL',           'NIM_MODEL',           'meta/llama-3.1-8b-instruct'),
+    ('OUTPUT_FILENAME_PATTERN', 'OUTPUT_FILENAME_PATTERN', '{originalName} ({targetLang}).{ext}'),
+)
+
+
+def _apply_reloadable_env_settings():
+    g = globals()
+    for attr, env_var, default in _RELOADABLE_ENV_SETTINGS:
+        g[attr] = os.getenv(env_var, default)
+    # Legacy alias: API_ENDPOINT falls back to OLLAMA_API_ENDPOINT
+    g['API_ENDPOINT'] = os.getenv('API_ENDPOINT', g['OLLAMA_API_ENDPOINT'])
+
+
+_apply_reloadable_env_settings()
+
 PORT = int(os.getenv('PORT', '5000'))
 REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '900'))
 OLLAMA_NUM_CTX = int(os.getenv('OLLAMA_NUM_CTX', '4096'))
@@ -188,36 +215,16 @@ MIN_CHUNK_SIZE_TOKENS = 50
 """Taille minimale d'un chunk pour éviter la sur-fragmentation"""
 
 # LLM Provider configuration
-LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'ollama')  # 'ollama', 'gemini', 'openai', 'openrouter', 'mistral', 'deepseek', or 'poe'
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-
-# OpenRouter configuration (access to 200+ models)
-OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
-OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'anthropic/claude-sonnet-4')
+# LLM_PROVIDER, GEMINI_*, OPENAI_*, OPENROUTER_API_KEY/MODEL, MISTRAL_API_KEY/MODEL,
+# DEEPSEEK_API_KEY/MODEL, POE_API_KEY/MODEL, NIM_API_KEY/MODEL are loaded via
+# _apply_reloadable_env_settings() so reload_config() can refresh them at runtime.
 OPENROUTER_API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
-
-# Mistral AI configuration
-MISTRAL_API_KEY = os.getenv('MISTRAL_API_KEY', '')
-MISTRAL_MODEL = os.getenv('MISTRAL_MODEL', 'mistral-large-latest')
 MISTRAL_API_ENDPOINT = os.getenv('MISTRAL_API_ENDPOINT', 'https://api.mistral.ai/v1/chat/completions')
-
-# DeepSeek configuration (Chinese LLM, very cost-effective)
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
-DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
 DEEPSEEK_API_ENDPOINT = os.getenv('DEEPSEEK_API_ENDPOINT', 'https://api.deepseek.com/chat/completions')
 # DeepSeek V4 models (deepseek-v4-flash, deepseek-v4-pro) enable thinking by default,
 # wasting ~10-25x tokens on translation. Set to 'false' to keep thinking enabled.
 DEEPSEEK_DISABLE_THINKING = os.getenv('DEEPSEEK_DISABLE_THINKING', 'true').lower() == 'true'
-
-# Poe configuration (access to Claude, GPT, Gemini, Llama, Grok via single API)
-POE_API_KEY = os.getenv('POE_API_KEY', '')
-POE_MODEL = os.getenv('POE_MODEL', 'Claude-Sonnet-4')
 POE_API_ENDPOINT = os.getenv('POE_API_ENDPOINT', 'https://api.poe.com/v1/chat/completions')
-# NVIDIA NIM configuration (hosted cloud API for Llama, Mistral, and other models)
-NIM_API_KEY = os.getenv('NIM_API_KEY', '')
-NIM_MODEL = os.getenv('NIM_MODEL', 'meta/llama-3.1-8b-instruct')
 NIM_API_ENDPOINT = os.getenv('NIM_API_ENDPOINT', 'https://integrate.api.nvidia.com/v1/chat/completions')
 
 # SRT-specific configuration
@@ -256,10 +263,28 @@ OUTPUT_DIR = os.getenv('OUTPUT_DIR', 'translated_files')
 
 # Output filename pattern
 # Placeholders: {originalName}, {targetLang}, {sourceLang}, {model}, {date}, {datetime}, {ext}
-OUTPUT_FILENAME_PATTERN = os.getenv('OUTPUT_FILENAME_PATTERN', '{originalName} ({targetLang}).{ext}')
+# OUTPUT_FILENAME_PATTERN is loaded via _apply_reloadable_env_settings()
 
 # Debug mode (reload after .env is loaded)
 DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+
+
+def reload_config():
+    """Re-read .env and refresh runtime-mutable settings.
+
+    Call this after the web UI saves to .env so subsequent reads of
+    src.config.X (e.g. from config_routes.py) reflect the new values
+    without restarting the server.
+
+    Only settings listed in _RELOADABLE_ENV_SETTINGS are refreshed.
+    Static settings (chunk sizes, namespaces, prompts) and modules that
+    did `from src.config import X` snapshot at import time and are not
+    affected — read via `import src.config as cfg; cfg.X` for live values.
+    """
+    load_dotenv(_env_file, override=True)
+    _apply_reloadable_env_settings()
+    if _debug_mode or os.getenv('DEBUG_MODE', 'false').lower() == 'true':
+        _config_logger.debug("📋 Configuration reloaded from .env")
 
 # Log loaded configuration in debug mode
 if DEBUG_MODE or _debug_mode:
