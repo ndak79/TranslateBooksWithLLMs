@@ -7,6 +7,8 @@ __pycache__/
 .claude/
 CLAUDE.md
 .env
+.env.*
+!.env.example
 /venv
 build_installer.bat
 build/dist/
@@ -21,3 +23,19 @@ tests/.placeholder_tests/
 /plan/
 /experiments
 /tests
+
+# Ad-hoc scratch scripts at repo root — keep them out of commits.
+# Real tests live under tests/, real entrypoints are translate.py / translation_api.py / launcher.py.
+/check_*.py
+/scratch_*.py
+/debug_*.py
+/tmp_*.py
+/test_*.py
+
+# Common secret/credential file patterns
+*.pem
+*.key
+secrets.*
+credentials.*
+*_secret.*
+*_credentials.*
