@@ -579,6 +579,21 @@ export const ApiClient = {
             method: 'POST',
             body: JSON.stringify({ text: text || '' })
         });
+    },
+
+    // ========================================
+    // Cost Estimation
+    // ========================================
+
+    async getPricingDefaults() {
+        return await apiRequest('/api/pricing/defaults');
+    },
+
+    async estimateCost(payload) {
+        return await apiRequest('/api/cost/estimate', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
     }
 };
 

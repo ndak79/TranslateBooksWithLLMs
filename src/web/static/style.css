@@ -2498,3 +2498,113 @@ html.dark .ner-warnings {
     margin-right: 0.25rem;
     vertical-align: -2px;
 }
+
+/* ========================================
+   Cost Estimate Badge (paid API estimation)
+   ======================================== */
+.cost-badge {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.6rem;
+    background: var(--background-light);
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    line-height: 1.2;
+    border: 1px solid var(--border-light);
+    box-shadow: inset 2px 2px 4px var(--shadow-dark),
+                inset -2px -2px 4px var(--shadow-light);
+    user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.cost-badge .cost-badge-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.cost-badge .cost-badge-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cost-badge .cost-badge-edit {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--primary-light);
+    padding: 0.15rem 0.55rem;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.cost-badge .cost-badge-edit:hover {
+    background: var(--primary-light);
+    color: #ffffff;
+}
+.cost-badge.cost-free {
+    color: var(--success-light);
+}
+.cost-badge.cost-free .cost-badge-icon {
+    color: var(--success-light);
+}
+.cost-badge.cost-estimated {
+    color: var(--text-dark);
+}
+.cost-badge.cost-estimated .cost-badge-icon {
+    color: var(--primary-light);
+}
+.cost-badge.cost-loading,
+.cost-badge.cost-unknown {
+    color: var(--text-muted-light);
+}
+.cost-badge.cost-error {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.3);
+}
+html.dark .cost-badge.cost-error {
+    color: #f87171;
+}
+.cost-badge .cost-spinning {
+    animation: cost-spin 0.9s linear infinite;
+}
+@keyframes cost-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Edit pricing modal */
+.cost-pricing-modal {
+    max-width: 480px;
+}
+.cost-pricing-subtitle {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-muted-light);
+    font-size: 0.9rem;
+}
+.cost-pricing-subtitle strong {
+    color: var(--text-dark);
+    font-weight: 600;
+}
+.cost-pricing-help {
+    margin: 0 0 1rem 0;
+    color: var(--text-muted-light);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+.cost-pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.cost-pricing-note {
+    margin: 1rem 0 0 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--info-light-bg);
+    color: var(--info-light);
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+}

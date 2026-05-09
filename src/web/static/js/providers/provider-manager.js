@@ -275,6 +275,13 @@ function populateModelSelect(models, defaultModel = null, provider = 'ollama') {
                     const outputPrice = formatPrice(model.pricing.completion_per_million);
                     option.textContent = `${model.name || modelId} (In: ${inputPrice}/M, Out: ${outputPrice}/M)`;
                 }
+                // Expose token-based pricing as data-* for the cost estimator
+                if (model.pricing.prompt_per_million !== undefined) {
+                    option.dataset.pricingInput = model.pricing.prompt_per_million;
+                }
+                if (model.pricing.completion_per_million !== undefined) {
+                    option.dataset.pricingOutput = model.pricing.completion_per_million;
+                }
             } else {
                 // Fallback format (no pricing)
                 option.textContent = model.label || model.name || modelId;
@@ -343,6 +350,12 @@ function populateModelSelect(models, defaultModel = null, provider = 'ollama') {
             modelSelect.appendChild(option);
         });
     }
+
+    // Notify the rest of the app that the model selection (or available models)
+    // changed, so cost estimator and similar consumers can refresh.
+    window.dispatchEvent(new CustomEvent('modelChanged', {
+        detail: { value: modelSelect.value }
+    }));
 
     return defaultModelFound;
 }
@@ -477,6 +490,9 @@ export const ProviderManager = {
                     // Trigger model detection check
                     ModelDetector.checkAndShowRecommendation();
                     StateManager.setState('ui.currentModel', option.value);
+                    window.dispatchEvent(new CustomEvent('modelChanged', {
+                        detail: { value: option.value }
+                    }));
                 }
             });
         }

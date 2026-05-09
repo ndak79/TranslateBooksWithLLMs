@@ -19,7 +19,8 @@ from .blueprints import (
     create_file_blueprint,
     create_security_blueprint,
     create_tts_blueprint,
-    create_glossary_blueprint
+    create_glossary_blueprint,
+    create_cost_blueprint,
 )
 
 
@@ -51,6 +52,10 @@ def configure_routes(app, state_manager, output_dir, start_translation_job, sock
     # Register security and upload routes
     security_bp = create_security_blueprint(output_dir)
     app.register_blueprint(security_bp)
+
+    # Register cost estimation routes
+    cost_bp = create_cost_blueprint(output_dir)
+    app.register_blueprint(cost_bp)
 
     # Register glossary management routes
     # Reuse the process-wide GlossaryStore so we don't multiply SQLite

@@ -26,6 +26,7 @@ import { GlossaryManager } from './glossary/glossary-manager.js';
 // ========================================
 import { ProviderManager } from './providers/provider-manager.js';
 import { ModelDetector } from './providers/model-detector.js';
+import { CostEstimator } from './providers/cost-estimator.js';
 
 // ========================================
 // File Management Modules
@@ -396,6 +397,7 @@ async function initializeModules() {
     initializePreviewHeight();
     ProviderManager.initialize();
     ModelDetector.initialize();
+    CostEstimator.initialize();
     FileUpload.initialize();
     FileManager.initialize();
     ProgressManager.reset();
