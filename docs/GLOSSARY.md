@@ -35,7 +35,7 @@ LLMs translate one chunk at a time and have no memory between chunks. Concretely
 | Ch. 12  | `Lee Fanqing`         |
 | Ch. 20  | `Li Fan-qing`         |
 
-With the glossary entry `李凡青 -> Li Fanqing  [character]`, every chunk that contains `李凡青` gets the rule injected into its prompt, so the output is `Li Fanqing` every single time. Same for sects, locations, weapons, honorifics.
+With the glossary entry `李凡青 -> Li Fanqing  [character]`, every chunk that contains `李凡青` gets the rule injected into its prompt, so the output is `Li Fanqing` every single time.
 
 What the LLM actually sees in the system prompt for a matching chunk:
 
