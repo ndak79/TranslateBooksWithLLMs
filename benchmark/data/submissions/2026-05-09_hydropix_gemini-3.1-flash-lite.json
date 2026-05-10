@@ -25,7 +25,7 @@
         "accuracy": 8.7,
         "fluency": 8.7,
         "style": 7.5,
-        "overall": 7.4,
+        "overall": 7.1,
         "feedback": "Stoic gnomic register flattened into modern Chinese essay tone; '做吧' is colloquial for the imperative voice and '灵魂' is a literal calque for 'souls' (better: 看法). −0.3 acc, −0.5 style."
       }
     },
@@ -40,7 +40,7 @@
         "accuracy": 9.0,
         "fluency": 8.5,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.9,
         "feedback": "Botanical/material accuracy excellent: 山楂花 (hawthorn), 鞍袋 (saddle-bag), 金链花 (laburnum) all correct. Compound '蜜甜而又蜜色' slightly clunky for 'honey-sweet and honey-coloured'. −0.5 fluency."
       }
     },
@@ -70,7 +70,7 @@
         "accuracy": 8.5,
         "fluency": 8.5,
         "style": 7.5,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "'Genius of their age' rendered as '时代的精神' loses the personification central to Emerson's romantic imagery. Gnomic imperative tone flattened. −0.5 acc, −0.5 style."
       }
     },
@@ -85,7 +85,7 @@
         "accuracy": 9.0,
         "fluency": 8.7,
         "style": 8.0,
-        "overall": 7.6,
+        "overall": 7.4,
         "feedback": "Metaphors well-rendered ('damp drizzly November in my soul' → '灵魂深处阴雨连绵' captures the mood). Melville's archaic narrative cadence flattened to modern Chinese narrative. −0.5 style."
       }
     },
@@ -100,7 +100,7 @@
         "accuracy": 9.0,
         "fluency": 8.7,
         "style": 8.5,
-        "overall": 7.7,
+        "overall": 7.4,
         "feedback": "All Darwin's epistemic hedging preserved (毫无疑问, 我希望, 恳请). Solid 19th-c. scientific Chinese register."
       }
     },
@@ -190,7 +190,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.9,
         "feedback": "Botanical/material lexicon excellent: alforjas persas, espinos rosados, laburno all correct. Wilde's ornate prose preserved with minimal loss."
       }
     },
@@ -220,7 +220,7 @@
         "accuracy": 9.0,
         "fluency": 8.5,
         "style": 8.5,
-        "overall": 7.7,
+        "overall": 7.6,
         "feedback": "Emerson's archaic imperatives ('Confía en ti mismo') and proclamatory tone preserved. 'Vibrar ante' is slightly less idiomatic than 'vibrar a/con'. −0.3 fluency."
       }
     },
@@ -235,7 +235,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "'Llamadme' (vosotros form) is an apt archaism. 'Ahuyentar el bazo' preserves Melville's humoral medicine register beautifully — period-fidelity is excellent."
       }
     },
@@ -250,7 +250,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.8,
         "feedback": "Darwin's hedging preserved ('Sin duda', 'espero', 'debo confiar'). 19th-c. Spanish scientific register reads naturally."
       }
     },
@@ -325,7 +325,7 @@
         "accuracy": 8.7,
         "fluency": 8.0,
         "style": 8.5,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "Grammar issue: 'abuse et méprise-toi' uses 'abuser' without 'de' — should be 'abuse de toi-même'. 'Vagabonder et errer de-ci de-là' nicely captures the archaic flavor. −0.5 fluency, −0.3 acc."
       }
     },
@@ -355,7 +355,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.7,
-        "overall": 8.5,
+        "overall": 8.4,
         "feedback": "Standard French physics register: 'tacitement admis', 'corps de référence', 'dans le vide'. Argument structure preserved with no logical drift."
       }
     },
@@ -370,7 +370,7 @@
         "accuracy": 8.5,
         "fluency": 8.7,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.6,
         "feedback": "Material error: 'corde d'acier' (steel) for 'iron string' — should be 'corde de fer'. Otherwise Emerson's proclamatory register preserved. −0.5 acc."
       }
     },
@@ -385,7 +385,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.5,
+        "overall": 7.3,
         "feedback": "Archaic French register kept ('peu ou point d'argent dans ma bourse'). 'Chasser la mélancolie' loses Melville's humoral term 'spleen' (canonical French keeps 'spleen'). −0.5 style."
       }
     },
@@ -505,7 +505,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.4,
+        "overall": 8.1,
         "feedback": "'Hệ quy chiếu' is correct technical Vietnamese. 'Khái niệm thời gian' for 'statement of time' slightly drifts to 'concept of time'. −0.3 acc."
       }
     },
@@ -610,7 +610,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "'Tinh túy' for 'marrow' loses the visceral metaphor (replaced by 'essence'). Otherwise Thoreau's contemplative register reads beautifully. −0.5 style, −0.3 acc."
       }
     },

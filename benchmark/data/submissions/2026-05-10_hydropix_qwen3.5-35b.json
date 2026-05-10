@@ -55,7 +55,7 @@
         "accuracy": 9.5,
         "fluency": 9.0,
         "style": 9.0,
-        "overall": 8.3,
+        "overall": 8.0,
         "feedback": "Adds 狭义 (special) qualifier not in source (-0.5 acc, mild hallucination of scope); otherwise clean technical Chinese, 真空中 for 'in vacuo' is correct convention."
       }
     },
@@ -85,7 +85,7 @@
         "accuracy": 9.0,
         "fluency": 8.5,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.7,
         "feedback": "'Regulating the circulation' → 调节循环 too literal (-0.3 flu); '高 time' weakened to '早该' (-0.3 style); but 嘴角阴沉 / 灵魂如同湿冷飘雨的十一月 capture Melville's voice well."
       }
     },
@@ -100,7 +100,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 9.0,
-        "overall": 8.3,
+        "overall": 8.0,
         "feedback": "Adds clause '在引用资料时' not strictly in source (-0.5 acc); minor 既/也无 split; 寄望/采信/权威之类术语保留19世纪科学语体."
       }
     },
@@ -130,7 +130,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.7,
         "feedback": "'Chuckling to himself' → 自言自语地笑道 (muttering, not chuckling, -0.5 acc); 'medico-legal' → 医学法学 should be 法医学 (-0.5 acc); dialogue rhythm otherwise natural."
       }
     },
@@ -160,7 +160,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.6,
         "feedback": "'Live deliberately' → 活得深刻 drifts (深刻 = profound, not deliberate, -0.5 acc); 苟活于非生命之境 strong literary phrasing; 精髓 weakens 'marrow' metaphor (-0.3 style)."
       }
     },
@@ -265,7 +265,7 @@
         "accuracy": 9.5,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 7.5,
+        "overall": 7.3,
         "feedback": "'Debe necesitar una esposa' is flat compared to Spanish classics' 'ha de necesitar' (-0.5 style); 'su primera entrada en un vecindario' is translationese (-0.5 flu); semantics intact."
       }
     },
@@ -280,7 +280,7 @@
         "accuracy": 9.5,
         "fluency": 9.5,
         "style": 8.5,
-        "overall": 8.2,
+        "overall": 7.9,
         "feedback": "'I perceive' → 'adivino' (I guess) drifts slightly (-0.5 acc); rest of dialogue natural with '¿Cómo diablos lo supo?' capturing the period exclamation; medico-legal/hemoglobina correct."
       }
     },
@@ -325,7 +325,7 @@
         "accuracy": 9.5,
         "fluency": 9.5,
         "style": 9.0,
-        "overall": 8.2,
+        "overall": 7.9,
         "feedback": "Tu form preserved (good archaic French); 'çà et là' classic for 'to and fro'; 'abaisse-toi' for 'abuse' is loose (-0.3 acc) but works. Best French of the batch."
       }
     },
@@ -355,7 +355,7 @@
         "accuracy": 9.8,
         "fluency": 9.5,
         "style": 9.0,
-        "overall": 8.8,
+        "overall": 8.7,
         "feedback": "Excellent French; 'tacitement admis', 'dans le vide', 'simultanéité' all conventionally correct; logical connectors flow naturally. Cleanest output of the run."
       }
     },
@@ -370,7 +370,7 @@
         "accuracy": 8.0,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 7.5,
+        "overall": 7.3,
         "feedback": "Same betray contresens repeated (-1.5 acc); 'iron string' → 'corde d'acier' (steel, not iron, -0.5 acc); 'tout leur être' agreement issue ('toute leur être'); 'Fais-toi confiance' modern register (-0.5 style)."
       }
     },
@@ -385,7 +385,7 @@
         "accuracy": 9.0,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 7.8,
+        "overall": 7.6,
         "feedback": "'N'ayant guère ni même pas d'argent' is awkward double-negative (-0.5 flu); adds 'mon visage se rembrunit' (face darkens, mild paraphrase, -0.3 acc); 'drizzly' weakened to 'pluvieux' (-0.3 style)."
       }
     },
@@ -415,7 +415,7 @@
         "accuracy": 9.5,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 8.0,
+        "overall": 7.7,
         "feedback": "'Doit absolument désirer une épouse' adds emphatic 'absolument' that flattens Austen's mock-formal irony (-0.5 style); 'Quelque peu connues que soient' good; semantics intact."
       }
     },
@@ -490,7 +490,7 @@
         "accuracy": 7.0,
         "fluency": 8.0,
         "style": 7.5,
-        "overall": 6.7,
+        "overall": 6.4,
         "feedback": "Multiple errors: 'lilac' → hoa tử đằng (wisteria, should be tử đinh hương, -0.5 acc); 'saddle-bags' → thảm (rug, -0.5 acc); critical hallucination 'thuốc lào' (water-pipe tobacco) added on top of 'thuốc lá' (cigarettes) (-1.5 acc); 'studio' → 'căn phòng' (-0.5 acc); 'laburnum' kept in Latin (-0.5 flu)."
       }
     },
@@ -550,7 +550,7 @@
         "accuracy": 9.5,
         "fluency": 9.5,
         "style": 9.0,
-        "overall": 8.4,
+        "overall": 8.1,
         "feedback": "Excellent formal Vietnamese; 'tất yếu sẽ còn bất toàn', 'trông cậy', 'uy tín', 'thận trọng' all preserve the 19th-c. scientific hedging; first-person epistemic stance intact."
       }
     },
@@ -595,7 +595,7 @@
         "accuracy": 9.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.2,
+        "overall": 7.9,
         "feedback": "'Venezia' (Italian form, vs Vi standard 'Venice', -0.3 acc); 'kể cũng không kể xiết' is slightly redundant doubling (-0.3 flu); 'dập tắt niềm say mê' captures 'crushed out enthusiasm'; mock-naive register preserved."
       }
     },
@@ -640,7 +640,7 @@
         "accuracy": 8.7,
         "fluency": 9.5,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.5,
         "feedback": "Currency error: 30 jeon and 5 jeon → 'thirty won' / 'five-won pieces' (-0.5 acc, jeon ≠ won); '양복장이' (Western-suit wearer) dropped (-0.3 acc); '추적추적' / '찰깍' onomatopoeia rendered well."
       }
     },

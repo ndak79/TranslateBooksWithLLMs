@@ -55,7 +55,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.7,
+        "overall": 7.4,
         "feedback": "Clean technical Chinese for relativity passage; minor tense/aspect drift on 'developed in Section VII' rendered as 将...阐述 (future) instead of past (-0.5 acc), but logical structure intact."
       }
     },
@@ -85,7 +85,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 7.5,
-        "overall": 7.3,
+        "overall": 7.1,
         "feedback": "'Regulating the circulation' translated metaphorically as 调理心境 loses Melville's literal/medical layer (-0.5 acc); 'grim about the mouth' flattened to 心情阴郁, dropping the embodied image (-0.5 style); 'drizzly' subsumed into 阴冷潮湿 (-0.3 style)."
       }
     },
@@ -100,7 +100,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.0,
+        "overall": 7.7,
         "feedback": "Faithful 19th-c. scientific register; Darwin's hedging ('I hope', 'No doubt', 'I must trust') preserved through 希望/无疑 patterns. No notable errors."
       }
     },
@@ -115,7 +115,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 7.5,
-        "overall": 7.5,
+        "overall": 7.2,
         "feedback": "Famous opening restructured ('这在社交界被认为是普遍真理') breaks Austen's punchline rhythm (-0.5 style); 'must be in want of a wife' overstated to 必然渴望娶 (must yearn to marry) loses ironic 'lacking' connotation (-0.5 style + -0.3 acc)."
       }
     },
@@ -130,7 +130,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.2,
+        "overall": 8.0,
         "feedback": "Clean Sherlock dialogue; '我看你曾在阿富汗待过' is natural and deductive; '好家伙' for 'Why, man' slightly modern but lively. Technical terms (血红蛋白, 法医学) accurate."
       }
     },
@@ -145,7 +145,7 @@
         "accuracy": 8.5,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "Twain's irony preserved; minor typo '一古画' missing 幅 (-0.3 fluency); 'glory to think' softened to 欣喜地认为 (-0.3 style). Closing punchline lands."
       }
     },
@@ -160,7 +160,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.9,
         "feedback": "'live deliberately' rendered as 生活得有意义 (live meaningfully) is a slight semantic drift from 'with intention' (-0.5 acc); 'practise resignation' → 习惯于无奈的妥协 captures sense but weakens the philosophical register (-0.3 style)."
       }
     },
@@ -175,7 +175,7 @@
         "accuracy": 9.0,
         "fluency": 7.5,
         "style": 8.0,
-        "overall": 6.9,
+        "overall": 6.6,
         "feedback": "Two non-standard reflexive verb forms: 'abúsate' (should be 'abusa de ti') and 'ménospreciate' with mis-accent (should be 'menospréciate') (-1.0 fluency total); meaning preserved and Stoic register adequate."
       }
     },
@@ -220,7 +220,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.5,
+        "overall": 8.2,
         "feedback": "Iron-string metaphor preserved ('cuerda de hierro'); 'concatenación de los acontecimientos' is a strong period choice; 'revelando' for 'betraying' captures the disclosure sense well."
       }
     },
@@ -235,7 +235,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "'Llámenme Ismael' is the canonical opening; 'regular la circulación' preserves Melville's medical register literally; 'mi semblante se vuelve sombrío' for 'grim about the mouth' loses the mouth specificity (-0.3 style)."
       }
     },
@@ -250,7 +250,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.7,
+        "overall": 7.5,
         "feedback": "Strong formal Spanish scientific register; 'fuentes fidedignas' and 'datos ilustrativos' faithful; Darwin's epistemic stance ('debo confiar', 'sin duda', 'espero') preserved."
       }
     },
@@ -265,7 +265,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.6,
         "feedback": "'Es una verdad universalmente reconocida' matches the canonical Spanish opening; 'debe de sentir la necesidad de casarse' uses inferential 'debe de' which carries Austen's irony well; 'caballero' adds period flavor."
       }
     },
@@ -280,7 +280,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "Dialogue flows naturally; 'percibo' for 'I perceive' is literal but functional (-0.3 style for slightly stiff Sherlock voice); 'medico-legal' technical term accurate."
       }
     },
@@ -295,7 +295,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.5,
         "feedback": "Twain's ironic deflation captured; 'la prueba infalible' echoes the source's mock-formal register; closing line 'No es nada; es del Renacimiento' lands cleanly."
       }
     },
@@ -325,7 +325,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "Strong French Stoic register: 'Fais-le, ô mon âme', 'méprise-toi', 'le temps où tu pourras t'estimer sera révolu'; 'sans fin' is a slight addition but rhythmically apt."
       }
     },
@@ -385,7 +385,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.5,
+        "overall": 8.2,
         "feedback": "'Appelez-moi Ismaël' is canonical; 'me remettre en circulation' is a clever French rendering preserving both literal and figurative layers of 'regulating the circulation'; 'l'amertume gagner mes lèvres' is idiomatic."
       }
     },
@@ -415,7 +415,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.7,
+        "overall": 7.4,
         "feedback": "Matches the canonical French Austen opening; 'aussi peu connus que puissent être les sentiments' is a strong concessive construction; closing 'propriété légitime' preserves the property-conceit irony."
       }
     },
@@ -445,7 +445,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.7,
+        "overall": 7.4,
         "feedback": "'Glory to think' rendered as 'm'égare en pensant' (lose myself thinking) is a sense-shift from exaltation to wandering thought (-0.5 acc); 'a douché mon enthousiasme' is a strong French metaphor for crushing enthusiasm."
       }
     },
@@ -475,7 +475,7 @@
         "accuracy": 8.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "Opening contresens: 'Do, soul, do' rendered 'Hãy nhìn lại đi' (Look back, soul) instead of imperative 'làm đi' — meaning reversed at a load-bearing line (-1.5 acc); 'phù phiếm' adds editorial color not in source (-0.3 acc); otherwise archaic Vietnamese register apt."
       }
     },
@@ -490,7 +490,7 @@
         "accuracy": 7.5,
         "fluency": 9.0,
         "style": 7.5,
-        "overall": 6.4,
+        "overall": 6.1,
         "feedback": "Multiple botanical/material errors in a Wilde passage where imagery is the point: 'pink-flowering thorn' → 'gai hoa hồng' (rose thorn) (-0.5 acc); 'Persian saddle-bags' → 'vải dệt kiểu Ba Tư' (Persian-style fabric) (-1.0 acc); 'laburnum' → 'cây phi yến' (delphinium/larkspur, wrong species) (-1.0 acc, -0.5 style)."
       }
     },
@@ -505,7 +505,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.5,
         "feedback": "Strong Vietnamese physics register; 'hệ quy chiếu', 'tính đồng thời', 'truyền ánh sáng trong chân không' are all conventional; past tense on 'đã được triển khai' correct for Einstein's reference."
       }
     },
@@ -550,7 +550,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.8,
+        "overall": 7.5,
         "feedback": "Faithful Vietnamese scientific prose; Darwin's hedging ('chắc chắn', 'tôi hy vọng', 'không tránh khỏi') preserved; 'nguồn tài liệu uy tín' is the right register for 'good authorities'."
       }
     },
@@ -580,7 +580,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.6,
+        "overall": 7.4,
         "feedback": "'I perceive' → 'Tôi đoán là' (I guess) flattens the deductive Sherlockian register (-0.5 style); 'huyết sắc tố' and 'pháp y' technical terms correct; dialogue flows naturally."
       }
     },
@@ -595,7 +595,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "Twain's ironic deflation preserved; 'minh chứng không thể sai lệch' is the right register for 'infallible proof'; closing 'đó chỉ là đồ thời Phục hưng thôi' captures the dismissive tone with the colloquial 'đồ'."
       }
     },
@@ -610,7 +610,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "'Cuộc đời tỉnh thức' for 'live deliberately' has Buddhist resonance Thoreau would not disown; 'bàng hoàng nhận ra' (stunned to realize) intensifies neutral 'discover' (-0.3 acc); 'tận hưởng đến giọt cuối cùng tinh túy' sweetens 'suck out all the marrow' (-0.3 style)."
       }
     },

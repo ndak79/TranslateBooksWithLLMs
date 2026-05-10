@@ -55,7 +55,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.4,
+        "overall": 7.1,
         "feedback": "Technically precise with established physics terms; '默契地' (mutual tacit) is a calque for 'tacitly' (silently). (-0.3 accuracy)"
       }
     },
@@ -85,7 +85,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.2,
+        "overall": 8.0,
         "feedback": "Excellent literary translation: '水天一色' for 'watery part of the world' and '调理气血' for 'regulating circulation' are idiomatic Chinese choices that preserve Melville's tone."
       }
     },
@@ -100,7 +100,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.4,
+        "overall": 7.1,
         "feedback": "Faithful to Darwin's qualified scientific tone; '恳请' is slightly stronger than 'I must trust' but preserves the spirit. (-0.3 style)"
       }
     },
@@ -145,7 +145,7 @@
         "accuracy": 9.0,
         "fluency": 8.0,
         "style": 8.5,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "Captures Twain's deflationary irony with idiomatic '当头浇灭', but uses Traditional 麼 in zh-Hans output. (-1.0 fluency script mismatch)"
       }
     },
@@ -160,7 +160,7 @@
         "accuracy": 8.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "Slight semantic drift on 'deliberately' (→ '有目的'), 'what was not life' (→ '虚伪的生活'), 'practise resignation' (→ '轻易放弃'). Reflective tone preserved. (-1.5 accuracy aggregate)"
       }
     },
@@ -175,7 +175,7 @@
         "accuracy": 8.5,
         "fluency": 7.5,
         "style": 7.5,
-        "overall": 6.6,
+        "overall": 6.3,
         "feedback": "Grammar error: 'deja de vagar y deambulando' mixes infinitive and gerund (should be 'vagar y deambular'). Archaic Stoic register reasonably attempted. (-1.5 fluency)"
       }
     },
@@ -235,7 +235,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.3,
+        "overall": 7.0,
         "feedback": "Canonical Spanish 'Llámame Ismael' opener; 'rostro sombrío' weakens the specific 'growing grim about the mouth' image. (-0.5 style)"
       }
     },
@@ -250,7 +250,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.3,
+        "overall": 7.2,
         "feedback": "Faithful Spanish rendering of Darwin's hedged stance; reads as natural academic Spanish, no notable losses."
       }
     },
@@ -265,7 +265,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "Preserves Austen's 'Es una verdad universalmente reconocida' framing (canonical Spanish opener); ironic register intact. The strongest Pride and Prejudice rendering of the four."
       }
     },
@@ -280,7 +280,7 @@
         "accuracy": 8.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.3,
+        "overall": 7.0,
         "feedback": "Smooth Spanish dialogue with proper dash convention, but mistranslates 'No doubt you see' as '¿No duda de la importancia?', reversing the rhetorical question. (-1.0 accuracy)"
       }
     },
@@ -295,7 +295,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.4,
+        "overall": 7.2,
         "feedback": "Captures Twain's deflationary irony cleanly in idiomatic Spanish; faithful rendering throughout."
       }
     },
@@ -325,7 +325,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 7.5,
-        "overall": 7.3,
+        "overall": 7.0,
         "feedback": "'Le temps...sera fini' shifts the deadline to an inability ('tu ne pourras plus te respecter'); Stoic French register reasonable. (-0.5 accuracy, -0.5 style)"
       }
     },
@@ -370,7 +370,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "Elegant French; 'le concours des événements' is felicitous. 'Le véritable guide' is a slight gloss for 'the absolutely trustworthy'. (-0.3 accuracy)"
       }
     },
@@ -385,7 +385,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.9,
         "feedback": "Canonical French 'Appelez-moi Ismaël' opener; faithful rendering of physiognomic and mood imagery, mid-19th-c maritime register preserved."
       }
     },
@@ -415,7 +415,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 7.0,
-        "overall": 7.4,
+        "overall": 7.1,
         "feedback": "'Généralement admis' is significantly weaker than 'universally acknowledged'; loses Austen's mock-universal framing that drives the chapter. (-1.0 style)"
       }
     },
@@ -445,7 +445,7 @@
         "accuracy": 9.0,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 7.4,
+        "overall": 7.1,
         "feedback": "Captures Twain's irony but 'commendation' is an English anglicism (FR: 'éloges' / 'louanges'). (-0.5 fluency)"
       }
     },
@@ -475,7 +475,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "Captures Stoic imperative tone with archaic 'ngươi'; minor semantic compression on 'affording thyself no respect'. (-0.3 accuracy)"
       }
     },
@@ -490,7 +490,7 @@
         "accuracy": 7.5,
         "fluency": 9.0,
         "style": 7.5,
-        "overall": 7.0,
+        "overall": 6.7,
         "feedback": "Botanical errors: lilac → 'tử đằng' (wisteria, wrong species), laburnum → 'cây chanh vàng' (lemon tree, wrong species). Sensory atmosphere preserved overall. (-2.5 accuracy)"
       }
     },
@@ -505,7 +505,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.4,
+        "overall": 7.2,
         "feedback": "Strong technical Vietnamese with established physics terminology; 'việc đo thời gian' slightly shifts 'statement of time' to 'measurement of time'. (-0.3 accuracy)"
       }
     },
@@ -520,7 +520,7 @@
         "accuracy": 8.7,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.3,
+        "overall": 7.0,
         "feedback": "Clean Vietnamese; 'phó mặc' for 'confided childlike' is idiomatic. 'Thượng đế' substitutes for 'divine providence' (acceptable but flattens). (-0.3 accuracy)"
       }
     },
@@ -550,7 +550,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.5,
+        "overall": 7.2,
         "feedback": "Faithful Vietnamese rendering of Darwin's hedged scientific stance; clean academic register."
       }
     },
@@ -565,7 +565,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 7.0,
-        "overall": 7.1,
+        "overall": 6.9,
         "feedback": "Natural Vietnamese, but 'Người ta thường nói' (people often say) flattens the universal-truth opener that drives Austen's irony. (-1.0 style)"
       }
     },
@@ -580,7 +580,7 @@
         "accuracy": 8.7,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 7.2,
+        "overall": 7.1,
         "feedback": "'Tôi đoán' weakens 'I perceive'; pronoun shifts between 'ông ta' and 'anh bạn' for the same speaker. (-0.3 acc, -0.5 fluency)"
       }
     },
@@ -595,7 +595,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.3,
+        "overall": 7.0,
         "feedback": "Excellent Vietnamese rendering of Twain's deflationary irony; 'mà thôi' adds an idiomatic Vietnamese closing particle that captures the dismissive tone."
       }
     },
@@ -610,7 +610,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.3,
+        "overall": 7.0,
         "feedback": "Idiomatic Vietnamese with 'nhắm mắt xuôi tay' for the deathbed image; 'tinh túy' (essence) abstracts Thoreau's bone-marrow physical metaphor. (-0.3 acc, -0.5 style)"
       }
     },

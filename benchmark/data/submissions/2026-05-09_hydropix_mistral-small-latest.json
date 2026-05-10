@@ -25,7 +25,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.1,
+        "overall": 6.8,
         "feedback": "Opening 'Do, soul, do' rendered as 振作起来 ('cheer up') reverses the sarcastic Stoic self-rebuke into encouragement, weakening the bite (−1.5 acc). Modernizing exclamation 啊！ slightly flattens gnomic register (−0.5 sty)."
       }
     },
@@ -55,7 +55,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.0,
+        "overall": 7.7,
         "feedback": "Clean technical translation: 真空中, 相对性原理, 同时性 all standard. 'Tacitly' rendered as 默认 — passable but slightly weaker than 暗中 / 默而不言. No real errors."
       }
     },
@@ -130,7 +130,7 @@
         "accuracy": 8.5,
         "fluency": 7.5,
         "style": 7.5,
-        "overall": 7.5,
+        "overall": 7.4,
         "feedback": "'Why, man' rendered as 什么，老兄 — 什么 (what?) is wrong as exclamation here (−0.5 flu). Pronoun choice oscillates between 你 and 老兄 inconsistently. Final ! marks inflate the dialogue's measured British register."
       }
     },
@@ -145,7 +145,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.6,
+        "overall": 7.3,
         "feedback": "自鸣得意 captures Twain's self-satisfied mock-naivety well. 浇灭 for 'crushed out' is idiomatic. Mock-elevated register slightly flattened — Twain's faux-grandeur not fully landed (−0.5 sty)."
       }
     },
@@ -160,7 +160,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.5,
+        "overall": 7.3,
         "feedback": "'Live deliberately' as 活得有意义 (meaningful) drifts from intentional/purposeful nuance (−0.3 acc). 'Marrow of life' as 精华 (essence) loses the visceral marrow image (−0.5 sty); a recurring weak spot for this model."
       }
     },
@@ -175,7 +175,7 @@
         "accuracy": 7.5,
         "fluency": 8.5,
         "style": 7.5,
-        "overall": 7.2,
+        "overall": 6.9,
         "feedback": "'Do, soul, do' as 'Ve, alma, ve' (go, soul, go) misreads the Stoic imperative — should be 'Obra/Actúa/Hazlo' (−1.5 acc). 'Conceits' as 'caprichos' weakens to whim/caprice (−0.5 acc). Archaic register modernized."
       }
     },
@@ -220,7 +220,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.9,
         "feedback": "Maxim-driven Emerson rhetoric well-rendered: 'cuerda de hierro', 'providencia divina'. 'Trust thyself' as 'Confía en ti mismo' loses archaic register but is the natural modern Spanish (−0.5 sty)."
       }
     },
@@ -250,7 +250,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.4,
+        "overall": 8.1,
         "feedback": "Darwin's hedging well-preserved: 'debo confiar en que el lector deposite cierta confianza' mirrors the doubled trust/confidence of the original. 'Hechos ilustrativos' is the standard scientific register."
       }
     },
@@ -280,7 +280,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.0,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "Proper Spanish dialogue formatting (em-dashes). 'Por todos los santos' for 'How on earth' is over-Catholicized for a British detective (−0.3 sty), but otherwise period-faithful. Holmes/Watson 'usted' register correct."
       }
     },
@@ -340,7 +340,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.9,
         "feedback": "'Aubépines à fleurs roses' (hawthorn) is botanically correct; 'cytise' for laburnum likewise. 'Sacs de selle persans' is a literal coinage — proper term is 'sacoches de selle' (−0.5 acc). 'Honey-sweet/honey-coloured' doubling reduced to 'dorées et sucrées' (−0.3 sty)."
       }
     },
@@ -355,7 +355,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.2,
+        "overall": 8.1,
         "feedback": "All Einstein terminology correct: simultanéité, vide, propagation, principe de relativité. 'Tacitement admettre' is the standard French calque. Argumentation flows without inflation."
       }
     },
@@ -385,7 +385,7 @@
         "accuracy": 9.0,
         "fluency": 8.0,
         "style": 8.5,
-        "overall": 7.2,
+        "overall": 7.0,
         "feedback": "'Appellez-moi' is misspelled (correct: 'Appelez-moi', single l) — a glaring error in the canonical opening (−0.5 flu). Otherwise excellent: 'que peu ou point d'argent' literary, 'amertume aux lèvres' idiomatic for 'grim about the mouth'."
       }
     },
@@ -475,7 +475,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "'Hỡi linh hồn ta, hãy hành động đi' — strong archaic vocative + correct imperative. 'Ngươi' archaic 2nd-person fits the Aurelius register. 'Hành hạ' is slightly stronger than 'abuse' (−0.3 acc). Gnomic register held."
       }
     },
@@ -505,7 +505,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.8,
         "feedback": "All physics terminology correct: thuyết tương đối, chân không, đồng thời, nguyên lý tương đối. Argumentation logically clean. Vietnamese reads as native scientific prose, not translated."
       }
     },
@@ -535,7 +535,7 @@
         "accuracy": 8.0,
         "fluency": 8.5,
         "style": 8.0,
-        "overall": 8.0,
+        "overall": 7.9,
         "feedback": "'November' translated as 'tháng Mười' (October) — should be 'tháng Mười Một' (−1.0 acc, factual error). 'Phần thế giới ngập tràn nước' is over-literal for 'watery part of the world' (−0.3 flu). Otherwise faithful to Melville's voice."
       }
     },
@@ -550,7 +550,7 @@
         "accuracy": 8.5,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 8.1,
+        "overall": 7.8,
         "feedback": "'Suffice' as 'đủ thuyết phục' (convincing) drifts from 'be enough' (−0.3 acc). Doubled 'tin tưởng/tin tưởng' nicely mirrors 'trust/confidence' from source. 19th-c scientific Vietnamese register held."
       }
     },
@@ -595,7 +595,7 @@
         "accuracy": 9.0,
         "fluency": 9.0,
         "style": 8.5,
-        "overall": 7.9,
+        "overall": 7.6,
         "feedback": "Twain's mock-naive irony well-rendered. 'Hào hứng dâng trào' captures 'swelling enthusiasm' viscerally. Final particle 'thôi' adds idiomatic Vietnamese dismissiveness to 'It is of the Renaissance'."
       }
     },
