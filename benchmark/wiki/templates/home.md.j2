@@ -32,12 +32,14 @@ Overall performance across all tested languages:
 
 ## Language Rankings (Top 15)
 
-Best translation quality by target language:
+Ranked by the **best model's** average overall on each target language.
+(Average across all models is too sensitive to forced dispersion under
+rubric §5 to be a fair comparator.)
 
-| Rank | Language | Native | Avg Score | Best Model | Tests | Obs | Verified |
-|------|----------|--------|-----------|------------|-------|-----|----------|
+| Rank | Language | Native | Best Score | Best Model | Tests | Obs | Verified |
+|------|----------|--------|------------|------------|-------|-----|----------|
 {% for lang in language_rankings[:15] %}
-| {{ loop.index }} | [{{ lang.name }}]({{ lang.page_name }}) | {{ lang.native_name }} | {{ lang.indicator }} {{ lang.avg_overall|round(1) }} | {{ lang.best_model }} | {{ lang.total_translations }} | {{ lang.n_obs_total | default(lang.total_translations) }} | {{ lang.verified_badge | default("verified") }} |
+| {{ loop.index }} | [{{ lang.name }}]({{ lang.page_name }}) | {{ lang.native_name }} | {{ lang.indicator }} {{ lang.best_overall|round(1) }} | {{ lang.best_model }} | {{ lang.total_translations }} | {{ lang.n_obs_total | default(lang.total_translations) }} | {{ lang.verified_badge | default("verified") }} |
 {% endfor %}
 
 {% if language_rankings|length > 15 %}
@@ -63,10 +65,10 @@ Best translation quality by target language:
 {% for category in categories %}
 #### {{ category.name }}
 
-| Language | Avg Score | Best Model |
-|----------|-----------|------------|
+| Language | Best Score | Best Model |
+|----------|------------|------------|
 {% for lang in category.languages %}
-| [{{ lang.name }}]({{ lang.page_name }}) | {{ lang.indicator }} {{ lang.avg_overall|round(1) }} | {{ lang.best_model }} |
+| [{{ lang.name }}]({{ lang.page_name }}) | {{ lang.indicator }} {{ lang.best_overall|round(1) }} | {{ lang.best_model }} |
 {% endfor %}
 
 {% endfor %}

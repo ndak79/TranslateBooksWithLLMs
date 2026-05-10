@@ -185,6 +185,16 @@ class WikiGenerator:
                 dist["failed"] += 1
         return dist
 
+    @staticmethod
+    def _best_per_model_overall(results: list) -> float:
+        by_model: dict[str, list[float]] = {}
+        for r in results:
+            if r.success and r.scores:
+                by_model.setdefault(r.model, []).append(r.scores.overall)
+        if not by_model:
+            return 0.0
+        return max(sum(scores) / len(scores) for scores in by_model.values())
+
     def generate_all(self, run_id: Optional[str] = None) -> Path:
         """
         Generate all wiki pages for a benchmark run.
@@ -256,22 +266,32 @@ class WikiGenerator:
                 **agg,
             })
 
-        # Calculate language rankings
+        # Calculate language rankings — sorted by the BEST per-model average
+        # overall on each language. Avg-overall is too sensitive to forced
+        # dispersion (rerank §5) to be a reliable comparator across languages.
         language_stats = run.get_language_stats()
         results_by_lang: dict = {}
         for r in run.results:
             results_by_lang.setdefault(r.target_language, []).append(r)
 
+        language_rows = []
+        for stats in language_stats:
+            results = results_by_lang.get(stats.language_code, [])
+            best_overall = self._best_per_model_overall(results)
+            language_rows.append((best_overall, stats, results))
+        language_rows.sort(key=lambda x: x[0], reverse=True)
+
         language_rankings = []
-        for stats in sorted(language_stats, key=lambda x: x.avg_overall, reverse=True):
+        for best_overall, stats, results in language_rows:
             lang_info = self._get_language_info(stats.language_code)
-            agg = self._aggregation_summary_for_results(results_by_lang.get(stats.language_code, []))
+            agg = self._aggregation_summary_for_results(results)
             language_rankings.append({
                 "name": lang_info["name"],
                 "native_name": lang_info["native_name"],
                 "page_name": self._language_page_name(lang_info["name"]),
+                "best_overall": best_overall,
                 "avg_overall": stats.avg_overall,
-                "indicator": get_score_indicator(stats.avg_overall),
+                "indicator": get_score_indicator(best_overall),
                 "best_model": stats.best_model or "N/A",
                 "total_translations": stats.total_translations,
                 **agg,
@@ -301,19 +321,26 @@ class WikiGenerator:
         for r in run.results:
             results_by_lang.setdefault(r.target_language, []).append(r)
 
-        headers = ["Language", "Native Name", "Category", "Avg Score", "Best Model", "Obs", "Verified"]
+        headers = ["Language", "Native Name", "Category", "Best Score", "Best Model", "Obs", "Verified"]
         rows = []
 
-        for stats in sorted(language_stats, key=lambda x: x.avg_overall, reverse=True):
+        language_rows = []
+        for stats in language_stats:
+            results = results_by_lang.get(stats.language_code, [])
+            best_overall = self._best_per_model_overall(results)
+            language_rows.append((best_overall, stats, results))
+        language_rows.sort(key=lambda x: x[0], reverse=True)
+
+        for best_overall, stats, results in language_rows:
             lang_info = self._get_language_info(stats.language_code)
-            indicator = get_score_indicator(stats.avg_overall)
+            indicator = get_score_indicator(best_overall)
             page_name = self._language_page_name(lang_info['name'])
-            agg = self._aggregation_summary_for_results(results_by_lang.get(stats.language_code, []))
+            agg = self._aggregation_summary_for_results(results)
             rows.append([
                 f"[{lang_info['name']}]({page_name})",
                 lang_info['native_name'],
                 lang_info['category'],
-                f"{indicator} {stats.avg_overall:.1f}",
+                f"{indicator} {best_overall:.1f}",
                 stats.best_model or "N/A",
                 str(agg["n_obs_total"]),
                 agg["verified_badge"],
