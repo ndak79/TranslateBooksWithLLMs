@@ -191,6 +191,37 @@
             </div>
         </header>
 
+        <!-- Update notification banner (populated by update-checker.js) -->
+        <div id="updateBanner" class="update-banner hidden" role="status" aria-live="polite">
+            <div class="update-banner__text">
+                <strong>Update available</strong>
+                <span id="updateBannerVersion"></span>
+                <a id="updateBannerLink" href="#" target="_blank" rel="noopener" style="margin-left: 0.5rem;">Release notes</a>
+            </div>
+            <div class="update-banner__actions">
+                <button type="button" id="updateBannerInstallBtn" class="btn btn-primary">
+                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">download</span>
+                    Update now
+                </button>
+                <button type="button" id="updateBannerCloseBtn" class="update-banner__close" title="Dismiss">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">close</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Update progress overlay (shown during git pull / pip install / restart) -->
+        <div id="updateOverlay" class="update-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="updateOverlayTitle">
+            <div class="update-overlay__panel">
+                <h3 id="updateOverlayTitle" class="update-overlay__title">Updating...</h3>
+                <p id="updateOverlayStep" class="update-overlay__step">Starting update</p>
+                <div id="updateOverlayError" class="update-overlay__error" style="display: none;"></div>
+                <pre id="updateOverlayLog" class="update-overlay__log"></pre>
+                <div class="update-overlay__actions">
+                    <button type="button" id="updateOverlayCloseBtn" class="btn btn-secondary" style="display: none;">Close</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Top-level Tab Navigation -->
         <div class="tab-nav" id="topTabNav" style="display: flex; gap: 8px; margin-bottom: 20px;">
             <button type="button" class="tab-btn tab-btn-active" data-tab="translate" onclick="switchTopTab('translate')">

@@ -2664,3 +2664,117 @@ html.dark .cost-badge.cost-error {
     border-radius: 0.5rem;
     font-size: 0.8125rem;
 }
+
+/* ========================================
+   Update Banner (auto-update notification)
+   ======================================== */
+.update-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--info-light-bg);
+    border: 1px solid var(--info-light);
+    border-radius: 0.75rem;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+}
+.update-banner.hidden { display: none; }
+.update-banner__text { flex: 1 1 auto; }
+.update-banner__text strong { color: var(--info-light); }
+.update-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+}
+.update-banner__actions .btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+}
+.update-banner__close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted-light);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+.update-banner__close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-dark);
+}
+html.dark .update-banner__close:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Modal-like overlay used while the update is running / restarting. */
+.update-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 22, 35, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+.update-overlay.hidden { display: none; }
+.update-overlay__panel {
+    background: var(--background-outer);
+    color: var(--text-dark);
+    border-radius: 1rem;
+    padding: 1.5rem 1.75rem;
+    max-width: 640px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border-light);
+}
+.update-overlay__title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.update-overlay__step {
+    margin: 0 0 1rem 0;
+    color: var(--text-muted-light);
+    font-size: 0.9rem;
+}
+.update-overlay__log {
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--background-light);
+    border: 1px solid var(--border-light);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--text-muted-light);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.update-overlay__actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+.update-overlay__error {
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+}
+html.dark .update-overlay__error { color: #fca5a5; }

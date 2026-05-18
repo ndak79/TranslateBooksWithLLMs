@@ -49,6 +49,7 @@ import { Validators } from './utils/validators.js';
 import { LifecycleManager } from './utils/lifecycle-manager.js';
 import { StatusManager } from './utils/status-manager.js';
 import { initializeThemeManager } from './utils/theme-manager.js';
+import { UpdateChecker } from './utils/update-checker.js';
 
 // ========================================
 // TTS Modules
@@ -403,6 +404,7 @@ async function initializeModules() {
     ProgressManager.reset();
     ResumeManager.initialize();
     LifecycleManager.initialize();
+    UpdateChecker.initialize().catch((e) => console.warn('UpdateChecker init failed:', e));
 
     // 2. Wire cross-module + WebSocket handlers BEFORE the socket connects.
     wireModuleEvents();

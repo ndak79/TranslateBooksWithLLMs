@@ -21,6 +21,7 @@ from .blueprints import (
     create_tts_blueprint,
     create_glossary_blueprint,
     create_cost_blueprint,
+    create_version_blueprint,
 )
 
 
@@ -67,6 +68,10 @@ def configure_routes(app, state_manager, output_dir, start_translation_job, sock
     if socketio:
         tts_bp = create_tts_blueprint(output_dir, socketio)
         app.register_blueprint(tts_bp)
+
+    # Register version check & self-update routes
+    version_bp = create_version_blueprint(state_manager)
+    app.register_blueprint(version_bp)
 
     # Register error handlers
     _register_error_handlers(app)

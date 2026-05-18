@@ -176,7 +176,10 @@ if [ -f "fix_installation.py" ]; then
 fi
 
 # ========================================
-# LAUNCH APPLICATION
+# LAUNCH APPLICATION (restart loop)
+# ----------------------------------------
+# The Python process can request a restart by exiting with code 42 (used by
+# the in-app auto-update flow). Any other exit code stops the loop.
 # ========================================
 echo "============================================"
 echo "Setup Complete! Starting Application..."
@@ -192,11 +195,26 @@ echo "Press Ctrl+C to stop the server"
 echo "============================================"
 echo ""
 
-# Start the Flask application
-python3 translation_api.py
+while true; do
+    python3 translation_api.py
+    EXITCODE=$?
+    if [ "$EXITCODE" -eq 42 ]; then
+        echo ""
+        echo "============================================"
+        echo "Restart requested by in-app updater."
+        echo "Re-installing dependencies if requirements.txt changed..."
+        echo "============================================"
+        if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt --upgrade --quiet
+        fi
+        echo "Relaunching..."
+        echo ""
+        continue
+    fi
+    break
+done
 
-# If server stops
 echo ""
 echo "============================================"
-echo "Server stopped"
+echo "Server stopped (exit code $EXITCODE)"
 echo "============================================"

@@ -8,6 +8,7 @@ from .security_routes import create_security_blueprint
 from .tts_routes import create_tts_blueprint
 from .glossary_routes import create_glossary_blueprint
 from .cost_routes import create_cost_blueprint
+from .version_routes import create_version_blueprint
 
 __all__ = [
     'create_config_blueprint',
@@ -17,4 +18,5 @@ __all__ = [
     'create_tts_blueprint',
     'create_glossary_blueprint',
     'create_cost_blueprint',
+    'create_version_blueprint',
 ]
