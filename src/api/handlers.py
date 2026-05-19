@@ -284,10 +284,28 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
 
                             if custom_instructions_content:
                                 _log_message_callback("custom_instructions", f"📝 Loaded custom instructions: {custom_instruction_file}")
+                        else:
+                            _log_message_callback(
+                                "custom_instructions_missing",
+                                f"⚠️ Custom instructions file '{custom_instruction_file}' was selected "
+                                f"but not found in {custom_instructions_dir}. Translation will proceed "
+                                f"without it."
+                            )
                     except ValueError:
                         pass  # Silently ignore invalid paths (security requirement)
+                else:
+                    _log_message_callback(
+                        "custom_instructions_invalid",
+                        f"⚠️ Custom instructions file name '{custom_instruction_file}' is invalid "
+                        f"(allowed: alphanumeric, underscore, hyphen, dot; must end in .txt). "
+                        f"Translation will proceed without it."
+                    )
             except Exception as e:
-                pass  # Silently ignore errors (requirement from plan)
+                _log_message_callback(
+                    "custom_instructions_error",
+                    f"⚠️ Failed to load custom instructions '{custom_instruction_file}': {e}. "
+                    f"Translation will proceed without it."
+                )
 
         # Inject custom instructions into prompt_options
         if custom_instructions_content:

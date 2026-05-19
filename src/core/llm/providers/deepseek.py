@@ -17,7 +17,7 @@ import httpx
 import asyncio
 import json
 
-from src.config import REQUEST_TIMEOUT, MAX_TRANSLATION_ATTEMPTS
+from src.config import REQUEST_TIMEOUT, MAX_TRANSLATION_ATTEMPTS, TEMPERATURE
 from ..base import LLMProvider, LLMResponse
 from ..exceptions import ContextOverflowError
 from ..rate_limit_handler import handle_rate_limit
@@ -214,7 +214,7 @@ class DeepSeekProvider(LLMProvider):
         payload = {
             "model": self.model,
             "messages": messages,
-            "temperature": 0.3,
+            "temperature": TEMPERATURE,
             "stream": False
         }
 

@@ -14,10 +14,27 @@ from typing import List, Optional, Union
 import httpx
 import asyncio
 
-from src.config import REQUEST_TIMEOUT, MAX_TRANSLATION_ATTEMPTS
+from src.config import (
+    REQUEST_TIMEOUT,
+    MAX_TRANSLATION_ATTEMPTS,
+    TEMPERATURE,
+    GEMINI_SAFETY_THRESHOLD,
+)
 from ..base import LLMProvider, LLMResponse
 from ..exceptions import ContextOverflowError
 from ..rate_limit_handler import handle_rate_limit
+
+# Four harm categories returned by the Gemini API. By default Gemini blocks
+# anything at MEDIUM and above on all four, which strips a significant portion
+# of CN/KR webnovel content (romance, violence, supernatural themes). We send
+# explicit safetySettings on every request so the configured threshold (see
+# GEMINI_SAFETY_THRESHOLD in config.py) always wins over the API default.
+_GEMINI_HARM_CATEGORIES = (
+    "HARM_CATEGORY_HARASSMENT",
+    "HARM_CATEGORY_HATE_SPEECH",
+    "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+    "HARM_CATEGORY_DANGEROUS_CONTENT",
+)
 
 
 class GeminiProvider(LLMProvider):
@@ -117,9 +134,19 @@ class GeminiProvider(LLMProvider):
 
             return models
 
+        except httpx.HTTPStatusError as e:
+            # Include status and response body so the caller (and the user
+            # through the API route) can see why the listing failed. Common
+            # cases: 400 (API key not enabled for the project), 403 (key
+            # restricted or revoked), 429 (quota exhausted).
+            body = ""
+            if hasattr(e, "response") and hasattr(e.response, "text"):
+                body = e.response.text[:500]
+            raise RuntimeError(
+                f"Gemini /v1beta/models returned HTTP {e.response.status_code}: {body}"
+            ) from e
         except Exception as e:
-            print(f"Error fetching Gemini models: {e}")
-            return []
+            raise RuntimeError(f"Error fetching Gemini models: {e}") from e
 
     async def generate(self, prompt: str, timeout: int = REQUEST_TIMEOUT,
                       system_prompt: Optional[str] = None) -> Optional[LLMResponse]:
@@ -145,9 +172,13 @@ class GeminiProvider(LLMProvider):
                 }]
             }],
             "generationConfig": {
-                "temperature": 0.7,
+                "temperature": TEMPERATURE,
                 **self._get_thinking_config()
-            }
+            },
+            "safetySettings": [
+                {"category": category, "threshold": GEMINI_SAFETY_THRESHOLD}
+                for category in _GEMINI_HARM_CATEGORIES
+            ],
         }
 
         # Add system instruction if provided (Gemini API supports systemInstruction field)
@@ -178,17 +209,39 @@ class GeminiProvider(LLMProvider):
                 # Extract text from Gemini response structure
                 response_text = ""
                 was_truncated = False
+                # When the input prompt itself is blocked, Gemini returns 200
+                # with no candidates and promptFeedback.blockReason populated.
+                # Surface this so the empty response isn't silently treated as
+                # a translation failure.
+                prompt_feedback = response_json.get("promptFeedback", {})
+                if prompt_feedback.get("blockReason") and not response_json.get("candidates"):
+                    print(
+                        f"⚠️ Gemini blocked the input prompt "
+                        f"(blockReason: {prompt_feedback['blockReason']}). "
+                        f"Consider lowering GEMINI_SAFETY_THRESHOLD "
+                        f"(current: {GEMINI_SAFETY_THRESHOLD})."
+                    )
                 if "candidates" in response_json and response_json["candidates"]:
                     candidate = response_json["candidates"][0]
                     content = candidate.get("content", {})
                     parts = content.get("parts", [])
                     if parts:
                         response_text = parts[0].get("text", "")
-                    # Detect truncation via finishReason
+                    # Detect finishReason: MAX_TOKENS = truncation; SAFETY/RECITATION
+                    # = the model produced nothing because the response was blocked
+                    # post-generation. We log SAFETY explicitly because a silent
+                    # empty content here is the main cause of mixed-language
+                    # output in EPUB translations.
                     finish_reason = candidate.get("finishReason", "")
                     if finish_reason == "MAX_TOKENS":
                         was_truncated = True
                         print(f"⚠️ Gemini response was truncated (finishReason: MAX_TOKENS)")
+                    elif finish_reason in ("SAFETY", "RECITATION") and not response_text:
+                        print(
+                            f"⚠️ Gemini returned empty content (finishReason: {finish_reason}). "
+                            f"This chunk was blocked post-generation; consider lowering "
+                            f"GEMINI_SAFETY_THRESHOLD (current: {GEMINI_SAFETY_THRESHOLD})."
+                        )
 
                 # Extract token usage if available
                 usage_metadata = response_json.get("usageMetadata", {})

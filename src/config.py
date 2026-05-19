@@ -160,7 +160,33 @@ CONTROLLABLE_THINKING_MODELS = [
 
 # Legacy alias for backward compatibility
 THINKING_MODELS = UNCONTROLLABLE_THINKING_MODELS + CONTROLLABLE_THINKING_MODELS
-MAX_TRANSLATION_ATTEMPTS = int(os.getenv('MAX_TRANSLATION_ATTEMPTS', '2'))
+_max_retries_legacy = os.getenv('MAX_RETRIES')
+if _max_retries_legacy and not os.getenv('MAX_TRANSLATION_ATTEMPTS'):
+    print(
+        f"⚠️  MAX_RETRIES is not a recognized setting and was renamed to "
+        f"MAX_TRANSLATION_ATTEMPTS. Accepting MAX_RETRIES={_max_retries_legacy} "
+        f"for backward compatibility; please rename it in your .env."
+    )
+    try:
+        MAX_TRANSLATION_ATTEMPTS = int(_max_retries_legacy)
+    except ValueError:
+        MAX_TRANSLATION_ATTEMPTS = 2
+else:
+    MAX_TRANSLATION_ATTEMPTS = int(os.getenv('MAX_TRANSLATION_ATTEMPTS', '2'))
+
+# Sampling temperature applied to cloud LLM providers (gemini, deepseek, mistral,
+# poe). Lower values favor consistent translations; higher values produce more
+# variation. Ollama is unaffected because it uses its own server-side defaults.
+TEMPERATURE = float(os.getenv('TEMPERATURE', '0.3'))
+
+# Gemini safety filter threshold applied to all four harm categories
+# (HARASSMENT, HATE_SPEECH, SEXUALLY_EXPLICIT, DANGEROUS_CONTENT). Default is
+# BLOCK_NONE because the tool is used to translate adult-themed novels where
+# Gemini's default MEDIUM threshold silently strips chunks and produces empty
+# responses. Users who want the default filter can set BLOCK_MEDIUM_AND_ABOVE.
+# Valid values: BLOCK_NONE, BLOCK_ONLY_HIGH, BLOCK_MEDIUM_AND_ABOVE,
+# BLOCK_LOW_AND_ABOVE, HARM_BLOCK_THRESHOLD_UNSPECIFIED.
+GEMINI_SAFETY_THRESHOLD = os.getenv('GEMINI_SAFETY_THRESHOLD', 'BLOCK_NONE')
 
 # Auto-pause on HTTP 429 rate limit
 # When True (default): translation pauses after retries are exhausted; user resumes manually.

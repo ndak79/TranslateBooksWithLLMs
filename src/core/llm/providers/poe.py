@@ -18,7 +18,7 @@ import httpx
 import asyncio
 import json
 
-from src.config import REQUEST_TIMEOUT, MAX_TRANSLATION_ATTEMPTS
+from src.config import REQUEST_TIMEOUT, MAX_TRANSLATION_ATTEMPTS, TEMPERATURE
 from ..base import LLMProvider, LLMResponse
 from ..exceptions import ContextOverflowError
 from ..rate_limit_handler import handle_rate_limit
@@ -342,7 +342,7 @@ class PoeProvider(LLMProvider):
             "model": self.model,
             "messages": messages,
             "stream": False,
-            "temperature": 0.3,  # Lower temperature for translation consistency
+            "temperature": TEMPERATURE,
         }
 
         client = await self._get_client()
