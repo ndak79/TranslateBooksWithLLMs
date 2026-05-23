@@ -386,6 +386,27 @@ class Database:
                 print(f"Error getting chunks: {e}")
                 return []
 
+    def get_failed_chunk_indices(self, translation_id: str) -> List[int]:
+        """
+        Return the chunk_index of every chunk currently marked 'failed'.
+
+        Used by the resume path to retry chunks that previously errored,
+        instead of leaving them as untranslated holes in the output.
+        """
+        with self._lock:
+            try:
+                conn = self._get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT chunk_index FROM checkpoint_chunks
+                    WHERE translation_id = ? AND status = 'failed'
+                    ORDER BY chunk_index
+                """, (translation_id,))
+                return [row['chunk_index'] for row in cursor.fetchall()]
+            except Exception as e:
+                print(f"Error getting failed chunks: {e}")
+                return []
+
     def get_resumable_jobs(self, max_age_days: int = 30) -> List[Dict[str, Any]]:
         """
         Get all jobs that can be resumed (status = paused or interrupted).
@@ -404,7 +425,7 @@ class Database:
                 # Only return jobs created within max_age_days
                 cursor.execute("""
                     SELECT * FROM translation_jobs
-                    WHERE status IN ('paused', 'interrupted', 'error')
+                    WHERE status IN ('paused', 'interrupted', 'error', 'partial')
                     AND created_at > datetime('now', ? || ' days')
                     ORDER BY updated_at DESC
                 """, (f'-{max_age_days}',))
@@ -448,7 +469,7 @@ class Database:
                 # Get IDs of jobs to delete (for logging and file cleanup)
                 cursor.execute("""
                     SELECT translation_id FROM translation_jobs
-                    WHERE status IN ('paused', 'interrupted', 'error', 'completed')
+                    WHERE status IN ('paused', 'interrupted', 'error', 'partial', 'completed')
                     AND created_at <= datetime('now', ? || ' days')
                 """, (f'-{max_age_days}',))
 
@@ -460,7 +481,7 @@ class Database:
                 # Delete old jobs (chunks deleted via CASCADE)
                 cursor.execute("""
                     DELETE FROM translation_jobs
-                    WHERE status IN ('paused', 'interrupted', 'error', 'completed')
+                    WHERE status IN ('paused', 'interrupted', 'error', 'partial', 'completed')
                     AND created_at <= datetime('now', ? || ' days')
                 """, (f'-{max_age_days}',))
 

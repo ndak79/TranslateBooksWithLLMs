@@ -578,6 +578,11 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
         # Estimate chunk size from first chunk's line count
         chunk_size = len(chunks[0]['main_content'].split('\n'))
 
+    # Chunks that previously errored and need to be re-attempted before continuing forward.
+    # Populated only on resume; the main loop checks membership to know it must overwrite
+    # an existing position in full_translation_parts instead of appending a new entry.
+    failed_chunk_indices: set = set()
+
     # Handle resume: load previously translated chunks
     if checkpoint_manager and translation_id and resume_from_index > 0:
         checkpoint_data = checkpoint_manager.load_checkpoint(translation_id)
@@ -589,9 +594,11 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                     full_translation_parts.append(chunk['translated_text'])
                     progress_tracker.mark_completed(i, 0.0)  # No elapsed time for resumed chunks
                 elif chunk['status'] == 'failed':
-                    # Failed chunk - use original
+                    # Failed chunk - use original as a placeholder; we will retry it below.
                     full_translation_parts.append(chunk['original_text'])
                     progress_tracker.mark_failed(i)
+
+            failed_chunk_indices = set(checkpoint_data.get('failed_chunk_indices', []))
 
             # Restore translation context for continuity
             if checkpoint_data.get('translation_context'):
@@ -603,6 +610,10 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                 log_callback("checkpoint_resumed",
                     f"Resumed from checkpoint: {stats.completed_chunks} chunks already completed, "
                     f"resuming from chunk {resume_from_index + 1}/{total_chunks}")
+                if failed_chunk_indices:
+                    log_callback("retry_failed_chunks_planned",
+                        f"♻️ {len(failed_chunk_indices)} previously failed chunk(s) will be retried: "
+                        f"{sorted(failed_chunk_indices)}")
 
     if log_callback:
         log_callback("txt_translation_loop_start", "Starting segment translation...")
@@ -664,9 +675,14 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
         iterator = tqdm(chunks, desc=f"Translating {source_language} to {target_language}", unit="seg") if not log_callback else chunks
 
         for i, chunk_data in enumerate(iterator):
-            # Skip already processed chunks when resuming
-            if i < resume_from_index:
+            is_retry = i in failed_chunk_indices
+            # Skip already-processed chunks, but always re-attempt previously failed ones
+            if i < resume_from_index and not is_retry:
                 continue
+
+            if is_retry and log_callback:
+                log_callback("retry_failed_chunk",
+                    f"♻️ Retrying previously failed chunk {i+1}/{total_chunks}")
 
             if check_interruption_callback and check_interruption_callback():
                 if log_callback:
@@ -676,10 +692,10 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                 # Mark as paused when interrupted
                 if checkpoint_manager and translation_id:
                     checkpoint_manager.mark_paused(translation_id)
-                # Add remaining untranslated chunks as original text so partial output is complete
-                # This ensures image markers and other content are preserved in partial EPUB
-                for remaining_chunk in chunks[i:]:
-                    full_translation_parts.append(remaining_chunk["main_content"])
+                # Append originals only for positions still missing — already-resumed positions
+                # (including failed-chunk placeholders) must stay intact.
+                while len(full_translation_parts) < total_chunks:
+                    full_translation_parts.append(chunks[len(full_translation_parts)]["main_content"])
                 break
 
             # Update progress (token-based)
@@ -703,9 +719,14 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
             chunk_start_time = time.time()
 
             if not main_content_to_translate.strip():
-                full_translation_parts.append(main_content_to_translate)
-                chunk_elapsed = time.time() - chunk_start_time
-                progress_tracker.mark_completed(i, chunk_elapsed)
+                if is_retry:
+                    full_translation_parts[i] = main_content_to_translate
+                    chunk_elapsed = time.time() - chunk_start_time
+                    progress_tracker.mark_recovered(i, chunk_elapsed)
+                else:
+                    full_translation_parts.append(main_content_to_translate)
+                    chunk_elapsed = time.time() - chunk_start_time
+                    progress_tracker.mark_completed(i, chunk_elapsed)
 
                 if stats_callback:
                     stats_callback(progress_tracker.get_stats().to_dict())
@@ -728,9 +749,13 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
             if len(main_content_to_translate.strip()) <= 1:
                 if log_callback:
                     log_callback("skip_translation", f"Skipping LLM for single/empty character: '{main_content_to_translate}'")
-                full_translation_parts.append(main_content_to_translate)
                 chunk_elapsed = time.time() - chunk_start_time
-                progress_tracker.mark_completed(i, chunk_elapsed)
+                if is_retry:
+                    full_translation_parts[i] = main_content_to_translate
+                    progress_tracker.mark_recovered(i, chunk_elapsed)
+                else:
+                    full_translation_parts.append(main_content_to_translate)
+                    progress_tracker.mark_completed(i, chunk_elapsed)
                 continue
 
             # Use adaptive context translation
@@ -771,9 +796,9 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                         completed_chunks=stats.completed_chunks,
                         failed_chunks=stats.failed_chunks
                     )
-                # Add remaining chunks as original text for partial output
-                for remaining_chunk in chunks[i:]:
-                    full_translation_parts.append(remaining_chunk["main_content"])
+                # Append originals only for positions still missing (see interruption note above).
+                while len(full_translation_parts) < total_chunks:
+                    full_translation_parts.append(chunks[len(full_translation_parts)]["main_content"])
                 raise  # Re-raise to handlers.py
 
             # Record success in context manager for adaptive learning
@@ -792,12 +817,21 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                 # (placeholder format defined in src/core/epub/constants.py)
                 translated_chunk_text = clean_translated_text(translated_chunk_text)
 
-                full_translation_parts.append(translated_chunk_text)
-                progress_tracker.mark_completed(i, chunk_elapsed)
+                if is_retry:
+                    full_translation_parts[i] = translated_chunk_text
+                    progress_tracker.mark_recovered(i, chunk_elapsed)
+                    if log_callback:
+                        log_callback("retry_failed_chunk_ok",
+                            f"✅ Recovered previously failed chunk {i+1}/{total_chunks}")
+                else:
+                    full_translation_parts.append(translated_chunk_text)
+                    progress_tracker.mark_completed(i, chunk_elapsed)
 
                 # Only propagate context from properly extracted translations,
                 # not from raw fallback responses which may be in the wrong language.
-                if not (llm_response and getattr(llm_response, 'was_fallback', False)):
+                # Skip context propagation when retrying out-of-order — the context
+                # belongs to the surrounding new chunks, not this earlier retry.
+                if not is_retry and not (llm_response and getattr(llm_response, 'was_fallback', False)):
                     words = translated_chunk_text.split()
                     if len(words) > 25:
                         last_successful_llm_context = " ".join(words[-25:])
@@ -810,8 +844,12 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                 else:
                     tqdm.write(f"\n{err_msg_chunk}")
                 error_placeholder = f"[TRANSLATION_ERROR SEGMENT {i+1}]\n{main_content_to_translate}\n[/TRANSLATION_ERROR SEGMENT {i+1}]"
-                full_translation_parts.append(error_placeholder)
-                progress_tracker.mark_failed(i)
+                if is_retry:
+                    # Retry failed again — keep failed marker (already counted), just refresh placeholder.
+                    full_translation_parts[i] = error_placeholder
+                else:
+                    full_translation_parts.append(error_placeholder)
+                    progress_tracker.mark_failed(i)
                 last_successful_llm_context = ""
 
             if stats_callback:
@@ -835,6 +873,72 @@ async def translate_chunks(chunks, source_language, target_language, model_name,
                     failed_chunks=stats.failed_chunks
                 )
     
+        # Auto-retry pass: any chunk still marked 'failed' in the DB after the main loop
+        # gets one more attempt before we hand control back. Catches transient errors
+        # (brief rate limit, intermittent network) so the user doesn't see
+        # [TRANSLATION_ERROR SEGMENT N] blocks unless retries genuinely fail.
+        # Skipped if the user interrupted — they want to stop, not auto-recover.
+        was_interrupted = bool(check_interruption_callback and check_interruption_callback())
+        if (checkpoint_manager and translation_id and not was_interrupted
+                and len(full_translation_parts) == total_chunks):
+            still_failed = checkpoint_manager.db.get_failed_chunk_indices(translation_id)
+            if still_failed:
+                if log_callback:
+                    log_callback("auto_retry_pass",
+                        f"♻️ End-of-run retry pass over {len(still_failed)} failed chunk(s): {still_failed}")
+                for idx in still_failed:
+                    if check_interruption_callback and check_interruption_callback():
+                        break
+                    retry_chunk = chunks[idx]
+                    retry_main = retry_chunk["main_content"]
+                    if not retry_main.strip():
+                        continue
+                    if log_callback:
+                        log_callback("auto_retry_chunk",
+                            f"♻️ Auto-retrying chunk {idx+1}/{total_chunks}")
+                    retry_start = time.time()
+                    try:
+                        retry_text, _, retry_response = await _make_llm_request_with_adaptive_context(
+                            main_content=retry_main,
+                            context_before=retry_chunk.get("context_before", ""),
+                            context_after=retry_chunk.get("context_after", ""),
+                            previous_translation_context="",
+                            source_language=source_language,
+                            target_language=target_language,
+                            model=model_name,
+                            llm_client=llm_client,
+                            log_callback=log_callback,
+                            has_placeholders=False,
+                            prompt_options=prompt_options,
+                            context_manager=context_manager,
+                            runtime_state=runtime_state,
+                        )
+                    except Exception as e:
+                        if log_callback:
+                            log_callback("auto_retry_chunk_error",
+                                f"⚠️ Auto-retry of chunk {idx+1} raised {type(e).__name__}; leaving as failed")
+                        retry_text = None
+
+                    retry_elapsed = time.time() - retry_start
+                    if retry_text is not None:
+                        retry_text = clean_translated_text(retry_text)
+                        full_translation_parts[idx] = retry_text
+                        progress_tracker.mark_recovered(idx, retry_elapsed)
+                        if log_callback:
+                            log_callback("auto_retry_chunk_ok",
+                                f"✅ Auto-retry recovered chunk {idx+1}/{total_chunks}")
+                        checkpoint_manager.save_checkpoint(
+                            translation_id=translation_id,
+                            chunk_index=idx,
+                            original_text=retry_main,
+                            translated_text=retry_text,
+                            chunk_data=retry_chunk,
+                            total_chunks=progress_tracker.get_stats().total_chunks,
+                            completed_chunks=progress_tracker.get_stats().completed_chunks,
+                            failed_chunks=progress_tracker.get_stats().failed_chunks,
+                        )
+                    if stats_callback:
+                        stats_callback(progress_tracker.get_stats().to_dict())
     finally:
         # Clean up LLM client resources if created
         if llm_client:

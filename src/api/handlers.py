@@ -486,11 +486,10 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                 _log_message_callback("cleanup_skipped_no_preserve", "ℹ️ Skipped cleanup - preserved file not found, keeping original for resume")
 
         elif state_manager.get_translation_field(translation_id, 'status') != 'error':
-            state_manager.set_translation_field(translation_id, 'status', 'completed')
-
             # Get stats for consolidated message
             final_stats = stats
             stats_summary = ""
+            failed = 0
             if config['file_type'] == 'txt' or (config['file_type'] == 'epub' and stats.get('total_chunks', 0) > 0):
                 completed = final_stats.get('completed_chunks', 0)
                 failed = final_stats.get('failed_chunks', 0)
@@ -506,15 +505,26 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                 if failed > 0:
                     stats_summary += f" ({failed} failed)"
 
-            # Single consolidated completion message
-            _log_message_callback("summary_completed", f"✅ Translation completed in {elapsed_time:.2f}s{stats_summary}")
+            # If chunks remain in failed state after auto-retry, keep the job resumable
+            # as 'partial' instead of marking it 'completed' and deleting the checkpoint.
+            # The user can then resume to retry the failed chunks without re-running the file.
+            if failed > 0:
+                state_manager.set_translation_field(translation_id, 'status', 'partial')
+                _log_message_callback("summary_partial",
+                    f"⚠️ Translation finished with {failed} failed chunk(s) in {elapsed_time:.2f}s"
+                    f"{stats_summary} — checkpoint kept for retry")
+                final_status_payload['status'] = 'partial'
+                checkpoint_manager.mark_partial(translation_id)
+                # Skip cleanup_completed_job — we want the checkpoint to survive for retry.
+            else:
+                state_manager.set_translation_field(translation_id, 'status', 'completed')
+                _log_message_callback("summary_completed", f"✅ Translation completed in {elapsed_time:.2f}s{stats_summary}")
+                final_status_payload['status'] = 'completed'
+                await asyncio.to_thread(notify, EVENT_SUCCESS,
+                    _notification_context(config, translation_id, elapsed_time))
 
-            final_status_payload['status'] = 'completed'
-            await asyncio.to_thread(notify, EVENT_SUCCESS,
-                _notification_context(config, translation_id, elapsed_time))
-
-            # Cleanup completed job checkpoint (automatic immediate cleanup)
-            checkpoint_manager.cleanup_completed_job(translation_id)
+                # Cleanup completed job checkpoint (automatic immediate cleanup)
+                checkpoint_manager.cleanup_completed_job(translation_id)
 
             # Clean up uploaded file if it exists and is in the uploads directory
             # On completion, we can safely delete the original upload file
@@ -572,7 +582,7 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
         emit_update(socketio, translation_id, final_status_payload, state_manager)
 
         # Trigger file list refresh in the frontend if a file was saved
-        if os.path.exists(output_filepath_on_server) and final_status_payload['status'] in ['completed', 'interrupted']:
+        if os.path.exists(output_filepath_on_server) and final_status_payload['status'] in ['completed', 'interrupted', 'partial']:
             socketio.emit('file_list_changed', {
                 'reason': final_status_payload['status'],
                 'filename': config.get('output_filename', 'unknown')

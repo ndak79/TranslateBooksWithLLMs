@@ -224,10 +224,15 @@ class CheckpointManager:
             # We need to resume from the next one
             resume_from_index = progress['current_chunk_index'] + 1
 
+        failed_chunk_indices = [
+            c['chunk_index'] for c in chunks if c.get('status') == 'failed'
+        ]
+
         return {
             'job': job,
             'chunks': chunks,
             'resume_from_index': resume_from_index,
+            'failed_chunk_indices': failed_chunk_indices,
             'translation_context': job.get('translation_context')
         }
 
@@ -430,6 +435,14 @@ class CheckpointManager:
             True if updated successfully
         """
         return self.db.update_job_progress(translation_id, status='interrupted')
+
+    def mark_partial(self, translation_id: str) -> bool:
+        """
+        Mark a job as 'partial' — the translation loop finished but some chunks
+        remain in failed state. The job stays resumable so the user can retry
+        those chunks without re-running the whole file.
+        """
+        return self.db.update_job_progress(translation_id, status='partial')
 
     def mark_completed(self, translation_id: str) -> bool:
         """

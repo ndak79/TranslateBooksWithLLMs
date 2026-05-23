@@ -22,8 +22,16 @@ function formatJobCard(job, hasActiveTranslation, activeNames) {
     const progress = job.progress || {};
     const completedChunks = progress.completed_chunks || 0;
     const totalChunks = progress.total_chunks || 0;
+    const failedChunks = progress.failed_chunks || 0;
     const progressPercent = job.progress_percentage || 0;
     const fileType = (job.file_type || 'txt').toUpperCase();
+    const isPartial = job.status === 'partial';
+
+    const statusBadge = isPartial
+        ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: #92400e; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px;" title="Translation finished but ${failedChunks} chunk(s) failed. Resume to retry them.">⚠️ ${failedChunks} failed</span>`
+        : (failedChunks > 0
+            ? `<span style="display: inline-block; margin-left: 8px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: #92400e; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px;" title="${failedChunks} chunk(s) failed and will be retried on resume.">⚠️ ${failedChunks} failed</span>`
+            : '');
 
     const createdDate = job.created_at ? new Date(job.created_at).toLocaleString('fr-FR') : 'N/A';
     const pausedDate = job.paused_at ? new Date(job.paused_at).toLocaleString('fr-FR') :
@@ -53,7 +61,7 @@ function formatJobCard(job, hasActiveTranslation, activeNames) {
                         → ${DomHelpers.escapeHtml(outputFilename)}
                     </div>
                     <div style="font-size: 12px; color: #9ca3af; margin-top: 8px;">
-                        Type: ${fileType} ${inputHash ? `• ID: ${inputHash}` : `• ID: ${job.translation_id.replace('trans_', '')}`}
+                        Type: ${fileType} ${inputHash ? `• ID: ${inputHash}` : `• ID: ${job.translation_id.replace('trans_', '')}`}${statusBadge}
                     </div>
                 </div>
 

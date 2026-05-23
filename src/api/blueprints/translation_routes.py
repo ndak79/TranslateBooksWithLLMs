@@ -144,7 +144,7 @@ def create_translation_blueprint(state_manager, start_translation_job):
                 'elapsed_time': elapsed
             },
             "logs": job_data.get('logs', [])[-100:],
-            "result_preview": "[Preview functionality removed. Download file to view content.]" if job_data.get('status') in ['completed', 'interrupted'] else None,
+            "result_preview": "[Preview functionality removed. Download file to view content.]" if job_data.get('status') in ['completed', 'interrupted', 'partial'] else None,
             "error": job_data.get('error'),
             "config": job_data.get('config'),
             "output_filepath": job_data.get('output_filepath')
