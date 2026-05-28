@@ -15,35 +15,14 @@ import { ApiKeyUtils } from '../utils/api-key-utils.js';
 import { StatusManager } from '../utils/status-manager.js';
 import { SearchableSelectFactory } from '../ui/searchable-select.js';
 import { t } from '../i18n/i18n.js';
-
-/**
- * Provider logos configuration
- * Using placeholder PNG paths - replace with actual logos
- */
-const PROVIDER_LOGOS = {
-    ollama: '/static/img/providers/ollama.png',
-    poe: '/static/img/providers/poe.png',
-    deepseek: '/static/img/providers/deepseek.png',
-    mistral: '/static/img/providers/mistral.png',
-    gemini: '/static/img/providers/gemini.png',
-    openai: '/static/img/providers/openai.png',
-    openrouter: '/static/img/providers/openrouter.png',
-    nim: '/static/img/providers/nvidia.png'
-};
-
-/**
- * Provider metadata for display
- */
-const PROVIDER_META = {
-    ollama: { name: 'Ollama', description: 'Local' },
-    poe: { name: 'Poe', description: 'Multi-Provider' },
-    deepseek: { name: 'DeepSeek', description: 'Cloud API' },
-    mistral: { name: 'Mistral', description: 'Cloud API' },
-    gemini: { name: 'Gemini', description: 'Cloud' },
-    openai: { name: 'OpenAI', description: 'Compatible' },
-    openrouter: { name: 'OpenRouter', description: '200+ models' },
-    nim: { name: 'NVIDIA NIM', description: 'Cloud API' }
-};
+import {
+    PROVIDER_LOGOS,
+    PROVIDER_META,
+    populateModelSelectInto,
+    setPlaceholderOption as setPlaceholderOptionShared,
+    renderProviderOption,
+    providerDisplayHtml,
+} from './provider-select-helpers.js';
 
 /**
  * Common OpenAI models list
@@ -199,19 +178,10 @@ let ollamaRetryCount = 0;
  * the UI locale without requiring us to re-run the original load logic.
  */
 function setPlaceholderOption(modelSelect, i18nKey) {
-    modelSelect.innerHTML = `<option value="" data-i18n="${i18nKey}">${t(i18nKey)}</option>`;
-}
-
-/**
- * Format price for display (per 1M tokens)
- * @param {number} price - Price per 1M tokens
- * @returns {string} Formatted price string
- */
-function formatPrice(price) {
-    if (price === 0) return t('settings:cost_format_free');
-    if (price < 0.01) return t('settings:cost_format_lt_001');
-    if (price < 1) return `$${price.toFixed(2)}`;
-    return `$${price.toFixed(2)}`;
+    // Delegates to the shared helper so Settings + Sample dropdowns share the
+    // same placeholder semantics (data-i18n keeps the text reactive on locale
+    // switch).
+    setPlaceholderOptionShared(modelSelect, i18nKey);
 }
 
 /**
@@ -225,152 +195,18 @@ function populateModelSelect(models, defaultModel = null, provider = 'ollama') {
     const modelSelect = DomHelpers.getElement('model');
     if (!modelSelect) return false;
 
-    modelSelect.innerHTML = '';
-    let defaultModelFound = false;
+    // All per-provider rendering (Gemini token labels, OpenRouter / Poe
+    // pricing labels, Poe optgroups, Mistral / DeepSeek / NIM tooltips,
+    // Ollama plain strings) lives in the shared helper; this wrapper just
+    // targets the Settings dropdown and fires the legacy `modelChanged`
+    // CustomEvent the cost estimator listens to.
+    const defaultFound = populateModelSelectInto(modelSelect, models, defaultModel, provider);
 
-    if (provider === 'gemini') {
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.name;
-            option.textContent = model.displayName || model.name;
-            // Full description in tooltip
-            let tooltip = [];
-            if (model.description) tooltip.push(model.description);
-            tooltip.push(`Input: ${model.inputTokenLimit || 'N/A'} tokens, Output: ${model.outputTokenLimit || 'N/A'} tokens`);
-            option.title = tooltip.join(' | ');
-            if (model.name === defaultModel) {
-                option.selected = true;
-                defaultModelFound = true;
-            }
-            modelSelect.appendChild(option);
-        });
-    } else if (provider === 'openai') {
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.value;
-            option.textContent = model.label;
-            if (model.value === defaultModel) {
-                option.selected = true;
-                defaultModelFound = true;
-            }
-            modelSelect.appendChild(option);
-        });
-    } else if (provider === 'openrouter' || provider === 'poe') {
-        // OpenRouter and Poe share the same pricing display format
-        // Poe additionally supports grouping by owned_by and request-based pricing
-        let currentGroup = null;
-        let optgroup = null;
-
-        models.forEach(model => {
-            // For Poe: group by owned_by or fallback group
-            if (provider === 'poe') {
-                const groupKey = model.group || model.owned_by;
-                if (groupKey && groupKey !== currentGroup) {
-                    currentGroup = groupKey;
-                    optgroup = document.createElement('optgroup');
-                    optgroup.label = currentGroup;
-                    modelSelect.appendChild(optgroup);
-                }
-            }
-
-            const option = document.createElement('option');
-            const modelId = model.id || model.value;
-            option.value = modelId;
-
-            // Format label with pricing info if available
-            if (model.pricing && (model.pricing.prompt_per_million !== undefined || model.pricing.request)) {
-                if (model.pricing.request && model.pricing.request > 0) {
-                    // Request-based pricing (Poe specific)
-                    option.textContent = `${model.name || modelId} ($${model.pricing.request.toFixed(4)}/req)`;
-                } else {
-                    // Token-based pricing (shared format)
-                    const inputPrice = formatPrice(model.pricing.prompt_per_million);
-                    const outputPrice = formatPrice(model.pricing.completion_per_million);
-                    option.textContent = `${model.name || modelId} (In: ${inputPrice}/M, Out: ${outputPrice}/M)`;
-                }
-                // Expose token-based pricing as data-* for the cost estimator
-                if (model.pricing.prompt_per_million !== undefined) {
-                    option.dataset.pricingInput = model.pricing.prompt_per_million;
-                }
-                if (model.pricing.completion_per_million !== undefined) {
-                    option.dataset.pricingOutput = model.pricing.completion_per_million;
-                }
-            } else {
-                // Fallback format (no pricing)
-                option.textContent = model.label || model.name || modelId;
-            }
-
-            // Build tooltip
-            let tooltip = [];
-            if (model.context_length) {
-                tooltip.push(`Context: ${model.context_length} tokens`);
-            }
-            if (model.description) {
-                tooltip.push(model.description);
-            }
-            option.title = tooltip.length > 0 ? tooltip.join(' | ') : '';
-
-            if (modelId === defaultModel) {
-                option.selected = true;
-                defaultModelFound = true;
-            }
-
-            // Add to optgroup if exists (Poe), otherwise to select
-            if (optgroup) {
-                optgroup.appendChild(option);
-            } else {
-                modelSelect.appendChild(option);
-            }
-        });
-    } else if (provider === 'mistral') {
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.value;
-            option.textContent = model.label;
-            if (model.context_length) {
-                option.title = `Context: ${model.context_length} tokens`;
-            }
-            if (model.value === defaultModel) {
-                option.selected = true;
-                defaultModelFound = true;
-            }
-            modelSelect.appendChild(option);
-        });
-    } else if (provider === 'deepseek' || provider === 'nim') {
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.value;
-            option.textContent = model.label;
-            if (model.context_length) {
-                option.title = `Context: ${model.context_length} tokens`;
-            }
-            if (model.value === defaultModel) {
-                option.selected = true;
-                defaultModelFound = true;
-            }
-            modelSelect.appendChild(option);
-        });
-    } else {
-        // Ollama - models are strings
-        models.forEach(modelName => {
-            const option = document.createElement('option');
-            option.value = modelName;
-            option.textContent = modelName;
-            if (modelName === defaultModel) {
-                option.selected = true;
-                defaultModelFound = true;
-            }
-            modelSelect.appendChild(option);
-        });
-    }
-
-    // Notify the rest of the app that the model selection (or available models)
-    // changed, so cost estimator and similar consumers can refresh.
     window.dispatchEvent(new CustomEvent('modelChanged', {
         detail: { value: modelSelect.value }
     }));
 
-    return defaultModelFound;
+    return defaultFound;
 }
 
 export const ProviderManager = {
@@ -438,32 +274,17 @@ export const ProviderManager = {
     initSearchableProviderSelect() {
         const providerSelect = DomHelpers.getElement('llmProvider');
         if (providerSelect) {
+            // Logo+name+description row and selected-chip rendering are
+            // factored into provider-select-helpers.js so the Sample tab
+            // column dropdowns produce visually identical UI.
             SearchableSelectFactory.create('llmProvider', {
                 placeholder: t('settings:search_providers_placeholder'),
                 showBadge: false,
-                renderOption: (opt) => {
-                    const logo = PROVIDER_LOGOS[opt.value] || '';
-                    const meta = PROVIDER_META[opt.value] || { name: opt.label, description: '' };
-                    const checkmark = opt.selected
-                        ? '<span class="option-check material-symbols-outlined">check</span>'
-                        : '<span class="option-check"></span>';
-
-                    return `
-                        ${checkmark}
-                        <span class="provider-option">
-                            <img src="${logo}" alt="" class="provider-logo" onerror="this.style.display='none'">
-                            <span class="provider-name">${DomHelpers.escapeHtml(meta.name)}</span>
-                            <span class="provider-description">${DomHelpers.escapeHtml(meta.description)}</span>
-                        </span>
-                    `;
-                },
+                renderOption: renderProviderOption,
                 onSelect: (option) => {
-                    // Update display with logo
                     this.updateProviderDisplay(option.value);
                 }
             });
-
-            // Set initial display with logo
             const currentValue = providerSelect.value;
             if (currentValue) {
                 this.updateProviderDisplay(currentValue);
@@ -478,15 +299,7 @@ export const ProviderManager = {
     updateProviderDisplay(providerValue) {
         const instance = SearchableSelectFactory.get('llmProvider');
         if (instance && instance.displayText) {
-            const logo = PROVIDER_LOGOS[providerValue] || '';
-            const meta = PROVIDER_META[providerValue] || { name: providerValue, description: '' };
-
-            instance.displayText.innerHTML = `
-                <span class="provider-option">
-                    <img src="${logo}" alt="" class="provider-logo" onerror="this.style.display='none'">
-                    <span class="provider-name">${DomHelpers.escapeHtml(meta.name)}</span>
-                </span>
-            `;
+            instance.displayText.innerHTML = providerDisplayHtml(providerValue);
         }
     },
 

@@ -257,6 +257,10 @@
                 <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem;">translate</span>
                 <span data-i18n="common:tab_translate">Translate</span>
             </button>
+            <button type="button" class="tab-btn" data-tab="sample" onclick="switchTopTab('sample')">
+                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem;">science</span>
+                <span data-i18n="common:tab_sample">Sample</span>
+            </button>
             <button type="button" class="tab-btn" data-tab="settings" onclick="switchTopTab('settings')">
                 <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem;">tune</span>
                 <span data-i18n="common:tab_settings">Settings</span>
@@ -597,6 +601,161 @@
         </div>
 
         </div><!-- /#tab-translate -->
+
+        <!-- Tab: Sample & Compare -->
+        <div id="tab-sample" class="hidden">
+            <div class="main-card">
+                <div class="card-body">
+                    <h2 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span class="material-symbols-outlined">science</span>
+                        <span data-i18n="sample:title">Sample &amp; Compare</span>
+                    </h2>
+                    <p style="color: var(--text-muted-light); font-size: 0.875rem; margin-bottom: 1.25rem;" data-i18n="sample:subtitle">
+                        Run up to 4 LLM configurations side-by-side on a few extracts from your book — no full translation needed.
+                    </p>
+
+                    <!-- File upload + languages -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label data-i18n="translation:source_language">Source Language</label>
+                            <div class="neu-inset-light">
+                                <select class="form-control" id="sampleSourceLang">
+                                    <option value="" selected data-i18n="translation:auto_detect_placeholder">Auto-detect from file...</option>
+                                    <option value="English">English</option>
+                                    <option value="Chinese">Chinese</option>
+                                    <option value="Spanish">Spanish</option>
+                                    <option value="French">French</option>
+                                    <option value="German">German</option>
+                                    <option value="Japanese">Japanese</option>
+                                    <option value="Korean">Korean</option>
+                                    <option value="Portuguese">Portuguese</option>
+                                    <option value="Russian">Russian</option>
+                                    <option value="Arabic">Arabic</option>
+                                    <option value="Italian">Italian</option>
+                                    <option value="Dutch">Dutch</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label data-i18n="translation:target_language">Target Language</label>
+                            <div class="neu-inset-light">
+                                <select class="form-control" id="sampleTargetLang">
+                                    <option value="English">English</option>
+                                    <option value="Chinese">Chinese</option>
+                                    <option value="Spanish">Spanish</option>
+                                    <option value="French" selected>French</option>
+                                    <option value="German">German</option>
+                                    <option value="Japanese">Japanese</option>
+                                    <option value="Korean">Korean</option>
+                                    <option value="Portuguese">Portuguese</option>
+                                    <option value="Russian">Russian</option>
+                                    <option value="Arabic">Arabic</option>
+                                    <option value="Italian">Italian</option>
+                                    <option value="Dutch">Dutch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Upload (same control as Translate tab) -->
+                    <div class="file-upload" id="sampleFileUpload" onclick="document.getElementById('sampleFileInput').click()">
+                        <div class="upload-icon">
+                            <span class="material-symbols-outlined">science</span>
+                        </div>
+                        <h3 data-i18n="sample:drop_file_title">Drop a book to sample</h3>
+                        <p data-i18n="sample:drop_file_support">Support for TXT, EPUB, SRT, and DOCX</p>
+                        <div class="browse-btn" data-i18n="translation:browse_files">Browse Files</div>
+                        <input type="file" id="sampleFileInput" accept=".txt,.epub,.srt,.docx" style="display: none;">
+                    </div>
+
+                    <!-- Selected file card (replaces the dropzone visually once a file is picked) -->
+                    <div id="sampleFileInfo" class="hidden sample-file-card">
+                        <div class="sample-file-cover" id="sampleFileCover">
+                            <span class="material-symbols-outlined">menu_book</span>
+                        </div>
+                        <div class="sample-file-meta">
+                            <div class="sample-file-label" data-i18n="sample:selected_file">Selected file:</div>
+                            <div class="sample-file-name" id="sampleFileName"></div>
+                            <div class="sample-file-details" id="sampleFileDetails"></div>
+                        </div>
+                        <button type="button" class="sample-file-remove" id="sampleFileRemoveBtn"
+                                data-i18n-attr="title:sample:remove_file;aria-label:sample:remove_file"
+                                title="Remove this book"
+                                aria-label="Remove this book">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Mode toggle -->
+                    <div class="form-group" style="margin-top: 18px; margin-bottom: 12px;">
+                        <label style="font-weight: 600;" data-i18n="sample:mode_label">Mode</label>
+                        <div id="sampleModeButtons" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-secondary sample-mode-btn sample-mode-btn-active" data-mode="translate" data-i18n="sample:mode_translate">Translate</button>
+                            <button type="button" class="btn btn-secondary sample-mode-btn" data-mode="refine" data-i18n="sample:mode_refine">Refine</button>
+                            <button type="button" class="btn btn-secondary sample-mode-btn" data-mode="translate_refine" data-i18n="sample:mode_translate_refine">Translate + Refine</button>
+                        </div>
+                    </div>
+
+                    <!-- Sampling parameters -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 15px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label data-i18n="sample:n_samples_label">Number of samples (N)</label>
+                            <div class="neu-inset-light">
+                                <input type="number" class="form-control" id="sampleNSamples" value="5" min="2" max="20">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label data-i18n="sample:max_chars_label">Max chars per sample</label>
+                            <div class="neu-inset-light">
+                                <input type="number" class="form-control" id="sampleMaxChars" value="180" min="50" max="2000">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="sampleUpdateBtn" disabled
+                                data-i18n-attr="title:sample:update_samples_title"
+                                title="Apply N and Max chars: re-sample the document, keeping existing translations where possible"
+                                style="height: 2.75rem; padding: 0 1.1rem; font-size: 0.875rem; gap: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.125rem;">refresh</span>
+                            <span data-i18n="sample:update_samples">Update samples</span>
+                        </button>
+                    </div>
+
+                    <!-- LLMs to compare -->
+                    <div style="border-top: 1px solid var(--border-light); margin-top: 24px;"></div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin: 22px 0 10px 0;">
+                        <label style="font-weight: 600; margin: 0;" data-i18n="sample:llms_label">LLMs to compare</label>
+                        <button type="button" class="btn btn-secondary" id="sampleAddColumnBtn" style="padding: 0.4rem 0.8rem; font-size: 0.8125rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">add</span>
+                            <span data-i18n="sample:add_llm">Add an LLM</span>
+                        </button>
+                    </div>
+                    <div id="sampleColumns" style="display: grid; gap: 12px;"></div>
+
+                    <!-- Action buttons -->
+                    <div style="text-align: center; margin-top: 24px; display: flex; justify-content: center; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="sampleRunBtn">
+                            <span class="material-symbols-outlined">play_circle</span>
+                            <span data-i18n="sample:run">Run</span>
+                        </button>
+                        <button class="btn btn-danger hidden" id="sampleStopBtn">
+                            <span class="material-symbols-outlined">stop_circle</span>
+                            <span data-i18n="sample:stop">Stop</span>
+                        </button>
+                        <button class="btn btn-secondary" id="sampleCopyMdBtn" disabled>
+                            <span class="material-symbols-outlined">content_copy</span>
+                            <span data-i18n="sample:copy_markdown">Copy as Markdown</span>
+                        </button>
+                    </div>
+
+                    <!-- Warnings -->
+                    <div id="sampleWarnings" style="margin-top: 14px;"></div>
+
+                    <!-- Results -->
+                    <div id="sampleResults" style="margin-top: 18px;">
+                        <p data-i18n="sample:no_results_yet" style="color: var(--text-muted-light); font-style: italic; text-align: center; padding: 20px;">No results yet. Pick a file, configure columns, and click Run.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Tab: Settings -->
         <div id="tab-settings" class="hidden">

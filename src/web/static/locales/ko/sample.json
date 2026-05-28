@@ -1,0 +1,60 @@
+{
+  "title": "샘플 및 비교",
+  "subtitle": "전체 번역 없이 책의 몇 개 발췌문에 대해 최대 4개의 LLM 구성을 나란히 실행하세요.",
+
+  "drop_file_title": "샘플링할 책을 드롭하세요",
+  "drop_file_support": "TXT, EPUB, SRT, DOCX 지원",
+  "selected_file": "선택한 책",
+  "remove_file": "이 책을 삭제하고 다른 책을 선택",
+
+  "mode_label": "모드",
+  "mode_translate": "번역",
+  "mode_refine": "다듬기",
+  "mode_translate_refine": "번역 + 다듬기",
+
+  "n_samples_label": "샘플 수 (N)",
+  "max_chars_label": "샘플당 최대 문자 수",
+  "update_samples": "샘플 업데이트",
+  "update_samples_title": "N과 최대 문자 수 적용: 문서를 다시 샘플링하고 가능한 한 기존 번역을 유지합니다.",
+
+  "llms_label": "비교할 LLM",
+  "llm_label": "LLM {{index}}",
+  "add_llm": "LLM 추가",
+  "remove_llm": "이 LLM 제거",
+
+  "run": "실행",
+  "stop": "중지",
+  "copy_markdown": "Markdown으로 복사",
+
+  "source_col_header": "원문",
+  "no_results_yet": "위에서 문서를 선택하면 샘플 블록이 표시됩니다.",
+  "no_samples_left": "모든 샘플이 제거되었습니다. \"샘플 추가\"로 다른 샘플을 가져오세요.",
+  "initializing": "샘플 블록을 선택하는 중…",
+  "remove_sample": "이 샘플 제거",
+  "add_sample": "샘플 추가",
+  "cell_pending": "클릭하여 이 LLM으로 이 발췌문을 번역하세요.",
+
+  "phase_translated": "번역됨",
+  "phase_refined": "다듬어짐",
+
+  "badge_truncated": "잘림",
+  "badge_fallback": "대체",
+  "badge_error": "오류",
+
+  "warning_small_document": "문서에 {{total}}개의 청크만 있습니다. {{requested}}개 대신 내부 청크 {{count}}개를 샘플링했습니다.",
+
+  "run_done": "샘플 실행이 완료되었습니다.",
+  "run_stopped": "샘플 실행이 중지되었습니다.",
+
+  "copied_to_clipboard": "Markdown이 클립보드에 복사되었습니다.",
+  "copy_failed": "복사 실패: {{error}}",
+
+  "error_no_file": "먼저 책 파일을 선택하세요.",
+  "error_no_samples": "번역할 샘플이 없습니다 — 최소 한 개를 추가하세요.",
+  "error_no_llms": "최소 한 개의 LLM을 추가하세요.",
+  "error_llm_missing_model": "LLM {{index}}에 모델이 선택되지 않았습니다. 실행 전에 선택하세요.",
+  "error_run": "샘플 실행을 시작할 수 없습니다: {{error}}",
+  "initialize_failed": "샘플 블록을 선택할 수 없습니다: {{error}}",
+  "add_sample_failed": "샘플을 추가할 수 없습니다: {{error}}",
+  "no_more_indices": "이 문서에 더 이상 사용 가능한 위치가 없습니다."
+}

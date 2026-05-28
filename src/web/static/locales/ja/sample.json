@@ -1,0 +1,60 @@
+{
+  "title": "サンプル & 比較",
+  "subtitle": "本のいくつかの抜粋に対して最大 4 つの LLM 構成を並べて実行できます — 完全な翻訳は不要です。",
+
+  "drop_file_title": "サンプリングする本をドロップ",
+  "drop_file_support": "TXT、EPUB、SRT、DOCX に対応",
+  "selected_file": "選択中の本",
+  "remove_file": "この本を削除して別の本を選択",
+
+  "mode_label": "モード",
+  "mode_translate": "翻訳",
+  "mode_refine": "推敲",
+  "mode_translate_refine": "翻訳 + 推敲",
+
+  "n_samples_label": "サンプル数 (N)",
+  "max_chars_label": "サンプルごとの最大文字数",
+  "update_samples": "サンプルを更新",
+  "update_samples_title": "N と最大文字数を適用：ドキュメントを再サンプリングし、可能な限り既存の翻訳を保持します。",
+
+  "llms_label": "比較する LLM",
+  "llm_label": "LLM {{index}}",
+  "add_llm": "LLM を追加",
+  "remove_llm": "この LLM を削除",
+
+  "run": "実行",
+  "stop": "停止",
+  "copy_markdown": "Markdown としてコピー",
+
+  "source_col_header": "原文",
+  "no_results_yet": "上でドキュメントを選択するとサンプル ブロックが表示されます。",
+  "no_samples_left": "すべてのサンプルが削除されました。「サンプルを追加」で別のサンプルを取り出してください。",
+  "initializing": "サンプル ブロックを選択中…",
+  "remove_sample": "このサンプルを削除",
+  "add_sample": "サンプルを追加",
+  "cell_pending": "クリックして、この抜粋をこの LLM で翻訳します。",
+
+  "phase_translated": "翻訳済み",
+  "phase_refined": "推敲済み",
+
+  "badge_truncated": "切り詰め",
+  "badge_fallback": "フォールバック",
+  "badge_error": "エラー",
+
+  "warning_small_document": "ドキュメントには {{total}} 個のチャンクしかないため、{{requested}} 個ではなく {{count}} 個の内部チャンクをサンプリングしました。",
+
+  "run_done": "サンプル実行が完了しました。",
+  "run_stopped": "サンプル実行が停止しました。",
+
+  "copied_to_clipboard": "Markdown をクリップボードにコピーしました。",
+  "copy_failed": "コピーに失敗しました: {{error}}",
+
+  "error_no_file": "まず本のファイルを選択してください。",
+  "error_no_samples": "翻訳するサンプルがありません — 少なくとも 1 つ追加してください。",
+  "error_no_llms": "少なくとも 1 つの LLM を追加してください。",
+  "error_llm_missing_model": "LLM {{index}} にモデルが選択されていません。実行する前に選択してください。",
+  "error_run": "サンプル実行を開始できませんでした: {{error}}",
+  "initialize_failed": "サンプル ブロックを選択できませんでした: {{error}}",
+  "add_sample_failed": "サンプルを追加できませんでした: {{error}}",
+  "no_more_indices": "このドキュメントには利用可能な位置がもうありません。"
+}

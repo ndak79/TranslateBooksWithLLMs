@@ -1,0 +1,60 @@
+{
+  "title": "Stichprobe & Vergleich",
+  "subtitle": "Vergleiche bis zu 4 LLM-Konfigurationen Seite an Seite anhand einiger Auszüge aus deinem Buch — ohne vollständige Übersetzung.",
+
+  "drop_file_title": "Buch zum Sampeln ablegen",
+  "drop_file_support": "Unterstützt TXT, EPUB, SRT und DOCX",
+  "selected_file": "Ausgewähltes Buch",
+  "remove_file": "Dieses Buch entfernen und ein anderes wählen",
+
+  "mode_label": "Modus",
+  "mode_translate": "Übersetzen",
+  "mode_refine": "Verfeinern",
+  "mode_translate_refine": "Übersetzen + Verfeinern",
+
+  "n_samples_label": "Anzahl der Proben (N)",
+  "max_chars_label": "Max. Zeichen pro Probe",
+  "update_samples": "Stichproben aktualisieren",
+  "update_samples_title": "Wendet N und Max. Zeichen an: das Dokument wird neu beprobt, bereits berechnete Übersetzungen bleiben nach Möglichkeit erhalten.",
+
+  "llms_label": "Zu vergleichende LLMs",
+  "llm_label": "LLM {{index}}",
+  "add_llm": "LLM hinzufügen",
+  "remove_llm": "Diesen LLM entfernen",
+
+  "run": "Starten",
+  "stop": "Stoppen",
+  "copy_markdown": "Als Markdown kopieren",
+
+  "source_col_header": "Quelle",
+  "no_results_yet": "Wähle oben ein Dokument, um Stichproben-Blöcke zu sehen.",
+  "no_samples_left": "Alle Stichproben entfernt. Nutze „Stichprobe hinzufügen“, um eine weitere zu ziehen.",
+  "initializing": "Stichproben-Blöcke werden ausgewählt…",
+  "remove_sample": "Diese Stichprobe entfernen",
+  "add_sample": "Stichprobe hinzufügen",
+  "cell_pending": "Klicken, um diesen Auszug mit diesem LLM zu übersetzen.",
+
+  "phase_translated": "Übersetzt",
+  "phase_refined": "Verfeinert",
+
+  "badge_truncated": "gekürzt",
+  "badge_fallback": "Fallback",
+  "badge_error": "Fehler",
+
+  "warning_small_document": "Das Dokument hat nur {{total}} Abschnitte; {{count}} innere Abschnitte statt {{requested}} verwendet.",
+
+  "run_done": "Sampling abgeschlossen.",
+  "run_stopped": "Sampling gestoppt.",
+
+  "copied_to_clipboard": "Markdown in die Zwischenablage kopiert.",
+  "copy_failed": "Kopieren fehlgeschlagen: {{error}}",
+
+  "error_no_file": "Wähle zuerst eine Buchdatei aus.",
+  "error_no_samples": "Keine Stichproben zum Übersetzen — füge mindestens eine hinzu.",
+  "error_no_llms": "Füge mindestens einen LLM hinzu.",
+  "error_llm_missing_model": "Für LLM {{index}} ist kein Modell ausgewählt — bitte zuerst auswählen.",
+  "error_run": "Sampling konnte nicht gestartet werden: {{error}}",
+  "initialize_failed": "Stichproben-Blöcke konnten nicht ausgewählt werden: {{error}}",
+  "add_sample_failed": "Stichprobe konnte nicht hinzugefügt werden: {{error}}",
+  "no_more_indices": "Keine weiteren Positionen in diesem Dokument verfügbar."
+}

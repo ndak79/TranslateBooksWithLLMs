@@ -22,7 +22,9 @@ from .blueprints import (
     create_glossary_blueprint,
     create_cost_blueprint,
     create_version_blueprint,
+    create_sample_blueprint,
 )
+from .sample_state import SampleStateManager
 
 
 def configure_routes(app, state_manager, output_dir, start_translation_job, socketio=None):
@@ -72,6 +74,14 @@ def configure_routes(app, state_manager, output_dir, start_translation_job, sock
     # Register version check & self-update routes
     version_bp = create_version_blueprint(state_manager)
     app.register_blueprint(version_bp)
+
+    # Register Sample & Compare routes (ephemeral, in-memory).
+    # The sample state manager is owned by this blueprint — sample runs are
+    # short-lived and not persisted, so they don't share storage with the
+    # main translation state.
+    sample_state_manager = SampleStateManager()
+    sample_bp = create_sample_blueprint(sample_state_manager, socketio)
+    app.register_blueprint(sample_bp)
 
     # Register error handlers
     _register_error_handlers(app)

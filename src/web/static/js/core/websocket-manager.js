@@ -58,6 +58,11 @@ export const WebSocketManager = {
             console.log('TTS update:', data.status, '-', data.message);
             this.emit('tts_update', data);
         });
+
+        // Sample & Compare events
+        socket.on('sample_update', (data) => {
+            this.emit('sample_update', data);
+        });
     },
 
     /**

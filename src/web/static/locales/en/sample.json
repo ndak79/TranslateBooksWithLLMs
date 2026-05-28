@@ -1,0 +1,60 @@
+{
+  "title": "Sample & Compare",
+  "subtitle": "Run up to 4 LLM configurations side-by-side on a few extracts from your book — no full translation needed.",
+
+  "drop_file_title": "Drop a book to sample",
+  "drop_file_support": "Support for TXT, EPUB, SRT, and DOCX",
+  "selected_file": "Selected book",
+  "remove_file": "Remove this book and pick another",
+
+  "mode_label": "Mode",
+  "mode_translate": "Translate",
+  "mode_refine": "Refine",
+  "mode_translate_refine": "Translate + Refine",
+
+  "n_samples_label": "Number of samples (N)",
+  "max_chars_label": "Max chars per sample",
+  "update_samples": "Update samples",
+  "update_samples_title": "Apply N and Max chars: re-sample the document, keeping existing translations where possible.",
+
+  "llms_label": "LLMs to compare",
+  "llm_label": "LLM {{index}}",
+  "add_llm": "Add an LLM",
+  "remove_llm": "Remove this LLM",
+
+  "run": "Run",
+  "stop": "Stop",
+  "copy_markdown": "Copy as Markdown",
+
+  "source_col_header": "Source",
+  "no_results_yet": "Pick a document above to see sample blocks.",
+  "no_samples_left": "All samples removed. Use \"Add a sample\" to pick another one.",
+  "initializing": "Picking sample blocks…",
+  "remove_sample": "Remove this sample",
+  "add_sample": "Add a sample",
+  "cell_pending": "Click to translate this extract with this LLM.",
+
+  "phase_translated": "Translated",
+  "phase_refined": "Refined",
+
+  "badge_truncated": "truncated",
+  "badge_fallback": "fallback",
+  "badge_error": "error",
+
+  "warning_small_document": "Document has only {{total}} chunks; sampled {{count}} interior chunks instead of {{requested}}.",
+
+  "run_done": "Sample run completed.",
+  "run_stopped": "Sample run stopped.",
+
+  "copied_to_clipboard": "Markdown copied to clipboard.",
+  "copy_failed": "Copy failed: {{error}}",
+
+  "error_no_file": "Pick a book file first.",
+  "error_no_samples": "No samples to translate — add at least one.",
+  "error_no_llms": "Add at least one LLM.",
+  "error_llm_missing_model": "LLM {{index}} has no model selected — pick one before running.",
+  "error_run": "Failed to start sample run: {{error}}",
+  "initialize_failed": "Failed to pick sample blocks: {{error}}",
+  "add_sample_failed": "Failed to add a sample: {{error}}",
+  "no_more_indices": "No more positions available in this document."
+}

@@ -1,0 +1,60 @@
+{
+  "title": "Muestrear y Comparar",
+  "subtitle": "Compara hasta 4 configuraciones de LLM en paralelo sobre algunos extractos de tu libro — sin necesidad de una traducción completa.",
+
+  "drop_file_title": "Suelta un libro para muestrear",
+  "drop_file_support": "Compatible con TXT, EPUB, SRT y DOCX",
+  "selected_file": "Libro seleccionado",
+  "remove_file": "Eliminar este libro y elegir otro",
+
+  "mode_label": "Modo",
+  "mode_translate": "Traducir",
+  "mode_refine": "Refinar",
+  "mode_translate_refine": "Traducir + Refinar",
+
+  "n_samples_label": "Número de muestras (N)",
+  "max_chars_label": "Caracteres máx. por muestra",
+  "update_samples": "Actualizar muestras",
+  "update_samples_title": "Aplica N y Caracteres máx.: vuelve a muestrear el documento conservando las traducciones existentes cuando sea posible.",
+
+  "llms_label": "LLM para comparar",
+  "llm_label": "LLM {{index}}",
+  "add_llm": "Añadir un LLM",
+  "remove_llm": "Eliminar este LLM",
+
+  "run": "Ejecutar",
+  "stop": "Detener",
+  "copy_markdown": "Copiar como Markdown",
+
+  "source_col_header": "Origen",
+  "no_results_yet": "Elige un documento arriba para ver los bloques de muestra.",
+  "no_samples_left": "Se eliminaron todas las muestras. Usa «Añadir una muestra» para extraer otra.",
+  "initializing": "Seleccionando bloques de muestra…",
+  "remove_sample": "Eliminar esta muestra",
+  "add_sample": "Añadir una muestra",
+  "cell_pending": "Haz clic para traducir este extracto con este LLM.",
+
+  "phase_translated": "Traducido",
+  "phase_refined": "Refinado",
+
+  "badge_truncated": "truncado",
+  "badge_fallback": "respaldo",
+  "badge_error": "error",
+
+  "warning_small_document": "El documento solo tiene {{total}} fragmentos; se muestrearon {{count}} fragmentos internos en lugar de {{requested}}.",
+
+  "run_done": "Muestreo completado.",
+  "run_stopped": "Muestreo detenido.",
+
+  "copied_to_clipboard": "Markdown copiado al portapapeles.",
+  "copy_failed": "Error al copiar: {{error}}",
+
+  "error_no_file": "Primero selecciona un archivo de libro.",
+  "error_no_samples": "No hay muestras para traducir — añade al menos una.",
+  "error_no_llms": "Añade al menos un LLM.",
+  "error_llm_missing_model": "El LLM {{index}} no tiene modelo seleccionado — elige uno antes de ejecutar.",
+  "error_run": "No se pudo iniciar el muestreo: {{error}}",
+  "initialize_failed": "No se pudieron seleccionar los bloques de muestra: {{error}}",
+  "add_sample_failed": "No se pudo añadir una muestra: {{error}}",
+  "no_more_indices": "No quedan más posiciones disponibles en este documento."
+}

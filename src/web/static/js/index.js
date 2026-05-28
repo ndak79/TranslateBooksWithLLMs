@@ -60,6 +60,11 @@ import { UpdateChecker } from './utils/update-checker.js';
 import { TTSManager } from './tts/tts-manager.js';
 
 // ========================================
+// Sample & Compare
+// ========================================
+import { SampleManager } from './sample/sample-manager.js';
+
+// ========================================
 // i18n
 // ========================================
 import { initI18n, applyToDOM, t } from './i18n/i18n.js';
@@ -438,6 +443,7 @@ async function initializeModules() {
     //    the UI. TranslationTracker.initialize() is async and performs
     //    network calls; failures are logged and the UI stays usable.
     TTSManager.initialize();
+    SampleManager.init();
     TranslationTracker.initialize().catch((error) => {
         console.error('TranslationTracker initialization failed:', error);
     });

@@ -8,7 +8,7 @@
  */
 
 export const SUPPORTED_LOCALES = ['en', 'fr', 'es', 'de', 'zh-CN', 'ja', 'ko'];
-export const NAMESPACES = ['common', 'translation', 'settings', 'glossary', 'files', 'tts', 'errors'];
+export const NAMESPACES = ['common', 'translation', 'settings', 'glossary', 'files', 'tts', 'errors', 'sample'];
 
 let ready = false;
 let readyPromise = null;
