@@ -21,6 +21,7 @@ from src.core.llm import OpenRouterProvider
 from src.core.llm.exceptions import RateLimitError
 from src.config import AUTO_PAUSE_ON_RATE_LIMIT, RATE_LIMIT_AUTO_RESUME_DELAY
 from src.core.adapters import translate_file, refine_file
+from src.core.progress import snapshot_from_legacy_stats
 from src.tts.tts_config import TTSConfig
 from src.utils.notifier import notify, EVENT_SUCCESS, EVENT_FAILURE, EVENT_INTERRUPTION
 from .websocket import emit_update
@@ -151,27 +152,61 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
             else:
                 logger.info(message_content)
 
-    # Side-channel that lets handlers.py override workflow metadata in stats
-    # updates. The translate_file → refine_file orchestration runs two
-    # independent progress trackers, so neither knows about the other; we
-    # inject `enable_refinement` / `current_phase` here so the UI can render
-    # a unified two-phase progress bar.
-    _workflow_meta: Dict[str, Any] = {}
+    # Single progress-emit seam. The translate_file → refine_file orchestration
+    # still runs two independent engine-side trackers, but the *workflow phase*
+    # is now owned here and passed explicitly per phase (TRANSLATING vs
+    # REFINING) by whichever call is driving the emit — replacing the old
+    # mutable `_workflow_meta` side-channel. A monotonic floor on the canonical
+    # `percent` guarantees the bar never regresses across the phase boundary,
+    # which is what previously required a manual counter reset at the
+    # transition.
+    _progress_floor = {'value': 0.0}
 
-    def _update_translation_stats_callback(new_stats_dict):
-        if state_manager.exists(translation_id):
-            merged_update = {**new_stats_dict, **_workflow_meta}
-            state_manager.update_stats(translation_id, merged_update)
-            current_stats = state_manager.get_translation_field(translation_id, 'stats') or {}
-            current_stats['elapsed_time'] = time.time() - current_stats.get('start_time', time.time())
-            state_manager.set_translation_field(translation_id, 'stats', current_stats)
-            emit_update(socketio, translation_id, {'stats': current_stats}, state_manager)
+    def _emit_progress(new_stats_dict, phase_meta):
+        if not state_manager.exists(translation_id):
+            return
+        state_manager.update_stats(translation_id, {**new_stats_dict, **phase_meta})
+        current_stats = state_manager.get_translation_field(translation_id, 'stats') or {}
+        current_stats['elapsed_time'] = time.time() - current_stats.get('start_time', time.time())
+        # Attach the canonical progress contract alongside the legacy fields,
+        # applying the monotonic floor so the global bar never moves backward.
+        snapshot = snapshot_from_legacy_stats(current_stats).to_dict()
+        if snapshot['percent'] < _progress_floor['value']:
+            snapshot['percent'] = _progress_floor['value']
+        else:
+            _progress_floor['value'] = snapshot['percent']
+        current_stats.update(snapshot)
+        state_manager.set_translation_field(translation_id, 'stats', current_stats)
+        emit_update(socketio, translation_id, {'stats': current_stats}, state_manager)
 
-            # Update logger progress for CLI display
-            completed = current_stats.get('completed_chunks', 0)
-            total = current_stats.get('total_chunks', 0)
-            if total > 0:
-                logger.update_progress(completed, total)
+        # Update logger progress for CLI display
+        completed = current_stats.get('completed_chunks', 0)
+        total = current_stats.get('total_chunks', 0)
+        if total > 0:
+            logger.update_progress(completed, total)
+
+    def _translate_stats_callback(new_stats_dict):
+        # Phase 1. enable_refinement advertises the two-phase bar up-front when
+        # a refine-after pass will follow, so phase 1 maps to the [0, 50] band.
+        _emit_progress(new_stats_dict, {
+            'enable_refinement': bool(config.get('refine_after')),
+            'current_phase': 1,
+        })
+
+    def _refine_after_stats_callback(new_stats_dict):
+        # Phase 2 of a refine-after workflow: maps to the [50, 100] band.
+        _emit_progress(new_stats_dict, {'enable_refinement': True, 'current_phase': 2})
+
+    def _refine_only_stats_callback(new_stats_dict):
+        # Single-phase refine-only: the whole bar is the refinement pass.
+        _emit_progress(new_stats_dict, {
+            'enable_refinement': False, 'refine_only': True, 'current_phase': 1,
+        })
+
+    def _finalize_stats_callback(new_stats_dict):
+        # Finalization pushes (e.g. final elapsed_time) must not re-assert a
+        # phase; the stored stats already carry the terminal phase/percent.
+        _emit_progress(new_stats_dict, {})
 
     def _openrouter_cost_callback(cost_data):
         """Update OpenRouter cost in state. No emit: this callback runs on the
@@ -364,9 +399,6 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
             )
 
         if config.get('refine_only'):
-            _workflow_meta['enable_refinement'] = False
-            _workflow_meta['refine_only'] = True
-            _workflow_meta['current_phase'] = 1
             _log_message_callback(
                 "refine_only_mode",
                 "✨ Refine-only mode: skipping translation, polishing the input file as-is."
@@ -388,7 +420,7 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                 checkpoint_manager=checkpoint_manager,
                 translation_id=translation_id,
                 log_callback=_log_message_callback,
-                stats_callback=_update_translation_stats_callback,
+                stats_callback=_refine_only_stats_callback,
                 check_interruption_callback=should_interrupt_current_task,
                 resume_from_index=resume_from_index,
                 llm_api_endpoint=config['llm_api_endpoint'],
@@ -405,13 +437,9 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                 prompt_options=config.get('prompt_options', {}),
             )
         else:
-            # If refine_after is requested, advertise the two-phase workflow up-front so
-            # the UI can render the phase bar from the start of phase 1 (translation).
-            if config.get('refine_after'):
-                _workflow_meta['enable_refinement'] = True
-                _workflow_meta['current_phase'] = 1
-
-            # Use unified adapter-based translation
+            # The translate-phase callback advertises the two-phase workflow
+            # up-front (via enable_refinement) when a refine-after pass will
+            # follow, so the UI renders the phase bar from the start of phase 1.
             await translate_file(
                 input_filepath=input_path_for_translate_module,
                 output_filepath=output_filepath_on_server,
@@ -422,7 +450,7 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                 checkpoint_manager=checkpoint_manager,
                 translation_id=translation_id,
                 log_callback=_log_message_callback,
-                stats_callback=_update_translation_stats_callback,
+                stats_callback=_translate_stats_callback,
                 check_interruption_callback=should_interrupt_current_task,
                 resume_from_index=resume_from_index,
                 llm_api_endpoint=config['llm_api_endpoint'],
@@ -450,17 +478,12 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                     not in ('error', 'partial', 'rate_limited')
             )
             if should_refine_after:
-                # Transition the UI to phase 2 before the refinement tracker starts
-                # emitting stats. We also reset completed_chunks/failed_chunks here
-                # because the state still holds end-of-phase-1 counters (cc=N);
-                # without this reset, the merged emit would carry cc=N together with
-                # current_phase=2 and the front-end would briefly show 100% before
-                # the first refinement chunk drops it back to ~50%.
-                _workflow_meta['current_phase'] = 2
-                _update_translation_stats_callback({
-                    'completed_chunks': 0,
-                    'failed_chunks': 0,
-                })
+                # Phase 2. No manual counter reset is needed: the refine-phase
+                # callback always tags emits as phase 2 with the refine engine's
+                # own counters (starting at 0), so a stale phase-1 count can
+                # never pair with phase 2, and the monotonic floor in
+                # _emit_progress keeps the bar from regressing across the
+                # transition.
                 _log_message_callback(
                     "refine_after_start",
                     "✨ Translation done — running refinement pass on the output."
@@ -474,7 +497,7 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
                     checkpoint_manager=checkpoint_manager,
                     translation_id=translation_id,
                     log_callback=_log_message_callback,
-                    stats_callback=_update_translation_stats_callback,
+                    stats_callback=_refine_after_stats_callback,
                     check_interruption_callback=should_interrupt_current_task,
                     resume_from_index=0,
                     llm_api_endpoint=config['llm_api_endpoint'],
@@ -521,7 +544,7 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
 
         stats = state_manager.get_translation_field(translation_id, 'stats') or {}
         elapsed_time = time.time() - stats.get('start_time', time.time())
-        _update_translation_stats_callback({'elapsed_time': elapsed_time})
+        _finalize_stats_callback({'elapsed_time': elapsed_time})
 
         final_status_payload = {
             'result': state_manager.get_translation_field(translation_id, 'result'),
@@ -760,7 +783,7 @@ async def perform_actual_translation(translation_id, config, state_manager, outp
 
         stats = state_manager.get_translation_field(translation_id, 'stats') or {}
         elapsed_time = time.time() - stats.get('start_time', time.time())
-        _update_translation_stats_callback({'elapsed_time': elapsed_time})
+        _finalize_stats_callback({'elapsed_time': elapsed_time})
 
         emit_update(socketio, translation_id, {
             'status': 'rate_limited',

@@ -157,6 +157,10 @@ class TranslationStateManager:
                     "progress_percent": stats.get('progress_percent'),
                     "current_phase": stats.get('current_phase'),
                     "enable_refinement": stats.get('enable_refinement', False),
+                    # Canonical progress contract (Step 2 seam), alongside the
+                    # legacy fields above for back-compat.
+                    "percent": stats.get('percent'),
+                    "phase": stats.get('phase'),
                     "last_translation": data.get('last_translation')
                 })
             return sorted(summaries, key=lambda x: x.get('start_time', 0), reverse=True)
