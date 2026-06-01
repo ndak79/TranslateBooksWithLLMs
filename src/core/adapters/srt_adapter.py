@@ -19,6 +19,12 @@ class SrtAdapter(FormatAdapter):
         self.blocks: List[List[Dict]] = []
         self.translations: Dict[int, str] = {}  # global_index -> translated_text
         self.processor = None
+        # global index of each subtitle, keyed by object identity, so block ->
+        # global lookups are O(1) instead of list.index() (O(n) per subtitle).
+        self._global_of: Dict[int, int] = {}
+        # Built-once cache of translation units; save_unit_translation reuses it
+        # instead of rebuilding every block on each save.
+        self._units: Optional[List[TranslationUnit]] = None
 
     async def prepare_for_translation(self) -> bool:
         """Parse SRT file and group subtitles into blocks."""
@@ -49,13 +55,21 @@ class SrtAdapter(FormatAdapter):
                 max_chars_per_block=10 ** 12,
             )
 
+            # Identity-keyed global index map (blocks hold references to the
+            # same subtitle dicts), and invalidate any cached units.
+            self._global_of = {id(s): i for i, s in enumerate(self.subtitles)}
+            self._units = None
+
             return True
 
         except Exception:
             return False
 
     def get_translation_units(self) -> List[TranslationUnit]:
-        """Create translation units from subtitle blocks."""
+        """Create translation units from subtitle blocks (cached after first build)."""
+        if self._units is not None:
+            return self._units
+
         units = []
 
         for block_idx, block in enumerate(self.blocks):
@@ -64,8 +78,8 @@ class SrtAdapter(FormatAdapter):
             local_to_global = {}
 
             for local_idx, subtitle in enumerate(block):
-                # Find global index of this subtitle
-                global_idx = self.subtitles.index(subtitle)
+                # Global index of this subtitle (O(1) identity lookup)
+                global_idx = self._global_of[id(subtitle)]
                 local_to_global[local_idx] = global_idx
                 block_text_lines.append(f"[{local_idx}]{subtitle['text']}")
 
@@ -91,11 +105,12 @@ class SrtAdapter(FormatAdapter):
                 metadata={
                     'block_index': block_idx,
                     'local_to_global': local_to_global,
-                    'block_subtitles': [self.subtitles.index(s) for s in block]
+                    'block_subtitles': [self._global_of[id(s)] for s in block]
                 }
             )
             units.append(unit)
 
+        self._units = units
         return units
 
     async def save_unit_translation(self, unit_id: str, translated_content: str) -> bool:

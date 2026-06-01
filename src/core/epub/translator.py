@@ -742,6 +742,32 @@ def _precount_chunks_plain_text(doc_root, max_tokens_per_chunk: int) -> int:
         return 0
 
 
+def _global_stats_payload(total_chunks, completed_chunks, acc, file_stats=None):
+    """Build the EPUB global-stats dict emitted to the progress callback.
+
+    Single source of the cross-file payload shape, shared by the resume-initial
+    emit, the per-chunk wrapper, and the post-file emit (which previously each
+    rebuilt this ~10-key dict by hand). ``completed_chunks`` / ``total_chunks``
+    are computed by the caller (they differ per site); the cumulative counters
+    come from ``acc`` (a TranslationMetrics) plus, when given, the current
+    file's not-yet-merged ``file_stats`` dict.
+    """
+    fs = file_stats or {}
+    return {
+        'total_chunks': total_chunks,
+        'completed_chunks': completed_chunks,
+        'failed_chunks': acc.failed_chunks + fs.get('failed_chunks', 0),
+        'token_alignment_used': acc.token_alignment_used + fs.get('token_alignment_used', 0),
+        'fallback_used': acc.fallback_used + fs.get('fallback_used', 0),
+        'placeholder_errors': acc.placeholder_errors + fs.get('placeholder_errors', 0),
+        'processed_chunks': acc.processed_chunks + fs.get('processed_chunks', 0),
+        'successful_after_retry': acc.successful_after_retry + fs.get('successful_after_retry', 0),
+        'quality_warning_fired': acc.quality_warning_fired or fs.get('quality_warning_fired', False),
+        'total_tokens': (acc.total_tokens_processed + acc.total_tokens_generated
+                         + fs.get('total_tokens_processed', 0) + fs.get('total_tokens_generated', 0)),
+    }
+
+
 async def _process_all_content_files(
     content_files: list,
     opf_dir: str,
@@ -831,19 +857,8 @@ async def _process_all_content_files(
     # restored fallback counters so the UI hydrates the Fallbacks card with
     # the work already done before the pause, instead of showing 0.
     if stats_callback and resume_from_index > 0:
-        stats_callback({
-            'total_chunks': effective_total_chunks,
-            'completed_chunks': completed_chunks_global,
-            'failed_chunks': accumulated_stats.failed_chunks,
-            'token_alignment_used': accumulated_stats.token_alignment_used,
-            'fallback_used': accumulated_stats.fallback_used,
-            'placeholder_errors': accumulated_stats.placeholder_errors,
-            'processed_chunks': accumulated_stats.processed_chunks,
-            'successful_after_retry': accumulated_stats.successful_after_retry,
-            'quality_warning_fired': accumulated_stats.quality_warning_fired,
-            'total_tokens': (accumulated_stats.total_tokens_processed
-                             + accumulated_stats.total_tokens_generated)
-        })
+        stats_callback(_global_stats_payload(
+            effective_total_chunks, completed_chunks_global, accumulated_stats))
 
     for file_idx, content_href in enumerate(content_files):
         # Check for interruption
@@ -894,25 +909,10 @@ async def _process_all_content_files(
             # When refinement is enabled, total work doubles (translation + refinement)
             effective_total = total_chunks * 2 if enable_refinement else total_chunks
 
-            # Report combined stats (accumulated + current file). Include the
-            # fallback counters so the Fallbacks stat card on the UI updates
-            # live; without these keys the frontend stays stuck at 0 even when
-            # Phase 2/3 fallbacks are accumulating. processed_chunks +
-            # successful_after_retry + quality_warning_fired are needed so the
-            # UI can derive the critical "high placeholder failure rate"
-            # state from the cumulative payload.
-            stats_callback({
-                'total_chunks': effective_total,
-                'completed_chunks': global_completed,
-                'failed_chunks': accumulated_stats.failed_chunks + file_stats_dict.get('failed_chunks', 0),
-                'token_alignment_used': accumulated_stats.token_alignment_used + file_stats_dict.get('token_alignment_used', 0),
-                'fallback_used': accumulated_stats.fallback_used + file_stats_dict.get('fallback_used', 0),
-                'placeholder_errors': accumulated_stats.placeholder_errors + file_stats_dict.get('placeholder_errors', 0),
-                'processed_chunks': accumulated_stats.processed_chunks + file_stats_dict.get('processed_chunks', 0),
-                'successful_after_retry': accumulated_stats.successful_after_retry + file_stats_dict.get('successful_after_retry', 0),
-                'quality_warning_fired': accumulated_stats.quality_warning_fired or file_stats_dict.get('quality_warning_fired', False),
-                'total_tokens': accumulated_stats.total_tokens_processed + accumulated_stats.total_tokens_generated + file_stats_dict.get('total_tokens_processed', 0) + file_stats_dict.get('total_tokens_generated', 0)
-            })
+            # Report combined stats (accumulated + current file). The fallback
+            # counters are included so the Fallbacks stat card updates live.
+            stats_callback(_global_stats_payload(
+                effective_total, global_completed, accumulated_stats, file_stats_dict))
 
         # Translate using orchestrator WITH checkpoint support
         doc_root, success, file_stats = await _translate_single_xhtml_file(
@@ -956,18 +956,8 @@ async def _process_all_content_files(
             else:
                 effective_completed = completed_chunks_global
             
-            stats_callback({
-                'total_chunks': effective_total_chunks,
-                'completed_chunks': effective_completed,
-                'failed_chunks': accumulated_stats.failed_chunks,
-                'token_alignment_used': accumulated_stats.token_alignment_used,
-                'fallback_used': accumulated_stats.fallback_used,
-                'placeholder_errors': accumulated_stats.placeholder_errors,
-                'processed_chunks': accumulated_stats.processed_chunks,
-                'successful_after_retry': accumulated_stats.successful_after_retry,
-                'quality_warning_fired': accumulated_stats.quality_warning_fired,
-                'total_tokens': accumulated_stats.total_tokens_processed + accumulated_stats.total_tokens_generated
-            })
+            stats_callback(_global_stats_payload(
+                effective_total_chunks, effective_completed, accumulated_stats))
 
         # Save the document if translation succeeded
         if success and doc_root is not None:
