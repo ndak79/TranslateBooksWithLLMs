@@ -38,6 +38,7 @@ LEVEL 3 - Translation (PlaceholderManager):
 import re
 import copy as _copy
 from collections import Counter
+from html.entities import html5 as _HTML5_ENTITIES
 from typing import List, Dict, Any, Optional, Callable, Tuple
 from lxml import etree
 
@@ -1055,11 +1056,68 @@ def _reconstruct_html(
         return final_html
 
 
+# XML predefines exactly five named entities; every other name (&nbsp;,
+# &hellip;, ...) is undefined without a DTD and gets DROPPED by lxml's
+# recover-mode parser at body reinjection, taking surrounding text with it.
+_XML_PREDEFINED_ENTITIES = frozenset({'amp', 'lt', 'gt', 'quot', 'apos'})
+
+# Matches '&' optionally followed by a well-formed reference body: a numeric
+# character reference (decimal or hex) or a named entity, semicolon included.
+# A bare '&' (group 1 is None) is not part of any reference.
+_AMP_OR_ENTITY_RE = re.compile(r'&(#(?:[0-9]+|[xX][0-9a-fA-F]+);|[a-zA-Z][a-zA-Z0-9]*;)?')
+
+
+def _is_valid_xml_codepoint(cp: int) -> bool:
+    return (cp in (0x9, 0xA, 0xD)
+            or 0x20 <= cp <= 0xD7FF
+            or 0xE000 <= cp <= 0xFFFD
+            or 0x10000 <= cp <= 0x10FFFF)
+
+
+def _escape_stray_ampersands(text: str) -> str:
+    """Neutralize every '&' that the XML parser would not accept (issue #202).
+
+    etree.XMLParser(recover=True) silently DELETES malformed or undefined
+    entity references together with adjacent text ('AT&T' -> 'AT'), so any
+    '&' surviving to replace_body_content() must be part of a reference the
+    parser understands:
+
+    - the five predefined XML entities and valid numeric references: kept;
+    - known HTML named entities (&nbsp;, &hellip;, ...): replaced by their
+      literal character(s), since they are undefined in DTD-less XHTML;
+    - everything else (bare '&', unknown names, out-of-range numerics):
+      escaped to '&amp;' so the original text renders verbatim.
+    """
+    def _fix(match: re.Match) -> str:
+        ref = match.group(1)
+        if ref is None:
+            return '&amp;'
+        if ref.startswith('#'):
+            try:
+                cp = int(ref[2:-1], 16) if ref[1] in 'xX' else int(ref[1:-1])
+            except ValueError:
+                cp = -1
+            return match.group(0) if _is_valid_xml_codepoint(cp) else '&amp;' + ref
+        if ref[:-1] in _XML_PREDEFINED_ENTITIES:
+            return match.group(0)
+        decoded = _HTML5_ENTITIES.get(ref)
+        if decoded is not None:
+            return (decoded.replace('&', '&amp;')
+                           .replace('<', '&lt;')
+                           .replace('>', '&gt;'))
+        return '&amp;' + ref
+
+    return _AMP_OR_ENTITY_RE.sub(_fix, text)
+
+
 def _escape_stray_angle_brackets(text: str) -> str:
-    """Escape every < and > to entities. Placeholders [idN] use square brackets,
-    so they are untouched. Existing HTML entities like &lt; in the text stay
-    intact because we do not re-escape '&'."""
-    return text.replace('<', '&lt;').replace('>', '&gt;')
+    """Escape stray markup characters so the reinjected body parses cleanly.
+
+    Ampersands are sanitized first (see _escape_stray_ampersands), then every
+    remaining raw < and > becomes an entity. Placeholders [idN] use square
+    brackets, so they are untouched, and entities already present in the text
+    (&lt;, &amp;, ...) survive because the ampersand pass recognizes them."""
+    return _escape_stray_ampersands(text).replace('<', '&lt;').replace('>', '&gt;')
 
 
 # Inline styles for bilingual output (kept inline so the EPUB renders without
