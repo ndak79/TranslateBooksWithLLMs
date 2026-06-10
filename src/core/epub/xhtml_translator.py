@@ -1122,10 +1122,14 @@ def _merge_bilingual(orig_el, trans_el, out_parent) -> None:
     (no translatable text) are emitted once to avoid duplicating empty lines.
     """
     if _local_tag(orig_el) in _BILINGUAL_CONTAINER_TAGS:
-        new = etree.SubElement(out_parent, orig_el.tag)
-        for k, v in orig_el.attrib.items():
-            new.set(k, v)
-        new.text = orig_el.text
+        # Copy-then-clear rather than SubElement + set(): the recovering
+        # parser keeps attributes with undeclared prefixes (e.g. epub:type,
+        # whose xmlns lives on the <html> root that is not part of these
+        # fragments) under their literal colon names, which set() rejects.
+        new = _copy.deepcopy(orig_el)
+        del new[:]
+        new.tail = None
+        out_parent.append(new)
         orig_children = _element_children(orig_el)
         trans_children = _element_children(trans_el)
         for oc, tc in zip(orig_children, trans_children):
@@ -1189,18 +1193,25 @@ def _interleave_bilingual(orig_html: str, trans_html: str) -> Optional[str]:
     if not all(_same_bilingual_structure(o, t) for o, t in zip(o_children, t_children)):
         return None
 
-    out = etree.Element('temp')
-    out.text = o_root.text
-    for oc, tc in zip(o_children, t_children):
-        before = len(out)
-        _merge_bilingual(oc, tc, out)
-        if len(out) > before and oc.tail:
-            out[-1].tail = oc.tail
+    # Merge + serialize under the same guard: lxml validates names on element
+    # construction and serialization, so quirks the recovering parser let
+    # through can still raise here. Falling back (None) keeps the file
+    # translated with the coarse lossless layout instead of failing it.
+    try:
+        out = etree.Element('temp')
+        out.text = o_root.text
+        for oc, tc in zip(o_children, t_children):
+            before = len(out)
+            _merge_bilingual(oc, tc, out)
+            if len(out) > before and oc.tail:
+                out[-1].tail = oc.tail
 
-    parts = [out.text] if out.text else []
-    for child in out:
-        parts.append(etree.tostring(child, encoding='unicode', method='xml'))
-    return "".join(parts)
+        parts = [out.text] if out.text else []
+        for child in out:
+            parts.append(etree.tostring(child, encoding='unicode', method='xml'))
+        return "".join(parts)
+    except (etree.XMLSyntaxError, ValueError):
+        return None
 
 
 def _replace_body(

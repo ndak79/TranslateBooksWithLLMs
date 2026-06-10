@@ -86,6 +86,21 @@ class TestInterleaveNestedContainer:
         assert out.index('Para one source') < out.index('Para one translated') \
             < out.index('Para two source')
 
+    def test_container_with_undeclared_namespace_prefix_attribute(self):
+        # Body fragments don't carry the xmlns:epub declaration (it lives on
+        # the <html> root), so the recovering parser keeps epub:type under its
+        # literal colon name. Rebuilding the container must not choke on it
+        # (regression: ValueError "Invalid attribute name 'epub:type'" failed
+        # the whole file).
+        orig = '<section epub:type="chapter"><p>S1</p><p>S2</p></section>'
+        trans = '<section epub:type="chapter"><p>T1</p><p>T2</p></section>'
+        out = _interleave_bilingual(orig, trans)
+
+        assert out is not None
+        assert out.count('epub:type="chapter"') == 1
+        assert out.count('bilingual-original') == 2
+        assert out.index('S1') < out.index('T1') < out.index('S2') < out.index('T2')
+
     def test_deeply_nested_text_complete(self):
         orig = '<div><section><p>Deep source.</p><p>More source.</p></section></div>'
         trans = '<div><section><p>Deep translated.</p><p>More translated.</p></section></div>'
