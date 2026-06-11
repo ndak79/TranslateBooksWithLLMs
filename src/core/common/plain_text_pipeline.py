@@ -25,6 +25,21 @@ from src.core.llm.exceptions import RateLimitError
 
 PARAGRAPH_SEPARATOR = "\n\n"
 _RESPLIT_REGEX = re.compile(r"\n{2,}")
+_MARKUP_TAG_REGEX = re.compile(r"</?[A-Za-z][A-Za-z0-9]*(?:\s[^<>]*?)?/?>")
+
+
+def strip_hallucinated_markup(translated: str, source: str) -> str:
+    """Remove HTML-like tags the model invented in Plain Text Mode.
+
+    Plain Text Mode never sends markup to the LLM, so a tag in the output is
+    model noise (e.g. small models wrap ordinals or footnote numbers in
+    <sup>...</sup>). Only the tags are dropped; their inner text is kept.
+    Chunks whose source legitimately contains '<' (code samples inside <pre>
+    blocks) are left untouched to avoid damaging real content.
+    """
+    if "<" not in translated or "<" in source:
+        return translated
+    return _MARKUP_TAG_REGEX.sub("", translated)
 
 
 def _split_translated_back_to_paragraphs(translated_text: str) -> List[str]:
@@ -292,6 +307,8 @@ async def translate_paragraphs_plain(
                 stats.failed_chunks += 1
             else:
                 cleaned = clean_translated_text(value)
+                cleaned = strip_hallucinated_markup(
+                    cleaned, chunks[i].get('main_content', ''))
                 translated_parts[i] = cleaned
                 stats.successful_first_try += 1
                 if sequential:

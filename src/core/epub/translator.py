@@ -29,7 +29,7 @@ from .epub_translation_adapter import EpubTranslationAdapter
 from ..post_processor import clean_residual_tag_placeholders
 from ..context_optimizer import AdaptiveContextManager, INITIAL_CONTEXT_SIZE, CONTEXT_STEP, MAX_CONTEXT_SIZE
 from .rtl_support import apply_rtl_to_epub_directory, is_rtl_language
-from .lang_support import apply_target_language_to_xhtml_directory
+from .lang_support import apply_target_language_to_xhtml_directory, get_language_code
 
 
 async def translate_epub_file(
@@ -339,6 +339,16 @@ def _find_opf_file(temp_dir: str) -> Optional[str]:
             if file.endswith('.opf'):
                 return os.path.join(root_dir, file)
     return None
+
+
+def _resolve_content_path(opf_dir: str, content_href: str) -> str:
+    """Resolve a manifest href to a filesystem path.
+
+    EPUB hrefs are URLs: spaces and non-ASCII characters are commonly
+    percent-encoded ("Chapter%201.xhtml"). They must be unquoted before
+    joining, otherwise the file is reported missing and ships untranslated.
+    """
+    return os.path.normpath(os.path.join(opf_dir, unquote(content_href)))
 
 
 def _get_content_files_from_spine(spine: etree._Element, manifest: etree._Element) -> list:
@@ -681,7 +691,7 @@ async def _precount_chunks(
         log_callback("epub_precount_start", f"📊 Analyzing {len(content_files)} files for progress tracking...")
 
     for content_href in content_files:
-        file_path = os.path.normpath(os.path.join(opf_dir, content_href))
+        file_path = _resolve_content_path(opf_dir, content_href)
         if not os.path.exists(file_path):
             chunks_per_file.append(0)
             continue
@@ -888,7 +898,7 @@ async def _process_all_content_files(
             completed_files += 1
             continue
 
-        file_path = os.path.normpath(os.path.join(opf_dir, content_href))
+        file_path = _resolve_content_path(opf_dir, content_href)
         chunks_in_this_file = chunks_per_file[file_idx] if file_idx < len(chunks_per_file) else 0
 
         if log_callback:
@@ -1449,10 +1459,15 @@ def _update_epub_metadata(
     opf_root = opf_tree.getroot()
     metadata = opf_root.find('.//opf:metadata', namespaces=NAMESPACES)
     if metadata is not None:
-        # Update language
+        # Update language. dc:language must be an ISO 639-1 code; resolve it
+        # with the same helper used for the XHTML lang attributes so OPF and
+        # XHTML never contradict each other. When the target cannot be
+        # resolved, leave the element unchanged rather than write a bogus code.
         lang_el = metadata.find('.//dc:language', namespaces=NAMESPACES)
         if lang_el is not None:
-            lang_el.text = target_language.lower()[:2]
+            lang_code = get_language_code(target_language)
+            if lang_code:
+                lang_el.text = lang_code
 
         # Add translation signature if enabled
         if ATTRIBUTION_ENABLED:

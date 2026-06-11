@@ -20,8 +20,15 @@ from lxml import etree
 BLOCK_TAGS = ("p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre")
 # Containers we descend into looking for blocks
 CONTAINER_TAGS = ("div", "section", "article", "main", "header", "footer", "aside", "nav")
-# Subtrees never sent to the LLM in Plain Text Mode
-DROP_TAGS = ("table", "svg", "figure", "picture", "video", "audio", "iframe", "form", "script", "style")
+# Subtrees never sent to the LLM in Plain Text Mode. Tables, figures and
+# pictures are NOT dropped: their text is extracted and their <img> elements
+# anchored, otherwise that content would be silently deleted from the output.
+DROP_TAGS = ("svg", "video", "audio", "iframe", "form", "script", "style")
+# Elements whose text would glue to the next sibling's without an explicit
+# separator once tags are stripped (adjacent table cells, rows, caption).
+SPACED_TAGS = ("td", "th", "tr", "caption")
+# Table cell-level elements emitted as individual paragraphs
+TABLE_CELL_TAGS = ("td", "th", "caption")
 # List wrappers we descend into (the inner <li> items become individual blocks)
 LIST_WRAPPER_TAGS = ("ul", "ol")
 
@@ -65,6 +72,8 @@ def _extract_text_keep_inline(elem: etree._Element, image_sink: List[etree._Elem
             out.append(node.text)
         for child in node:
             walk(child, include_tail=True)
+        if name in SPACED_TAGS:
+            out.append(" ")
         if include_tail and node.tail:
             out.append(node.tail)
 
@@ -87,6 +96,45 @@ def _clone_img(img: etree._Element) -> etree._Element:
     return new
 
 
+def _enclosing_table(elem: etree._Element) -> etree._Element:
+    """Return the nearest <table> ancestor, or None."""
+    parent = elem.getparent()
+    while parent is not None:
+        if _local_name(parent) == "table":
+            return parent
+        parent = parent.getparent()
+    return None
+
+
+def _collect_table_blocks(
+    table: etree._Element,
+    paragraphs_text: List[str],
+    paragraphs_tag: List[str],
+    images_by_paragraph: Dict[int, List[etree._Element]],
+) -> None:
+    """
+    Emit each cell (td/th) and the caption of a table as its own <p> block.
+
+    Plain Text Mode cannot represent tabular layout, but the cell text must
+    survive translation instead of being deleted. Cells of nested tables are
+    flattened into their outer cell's text rather than emitted twice.
+    """
+    for elem in table.iter():
+        if _local_name(elem) not in TABLE_CELL_TAGS:
+            continue
+        if _enclosing_table(elem) is not table:
+            continue
+
+        images: List[etree._Element] = []
+        text = _extract_text_keep_inline(elem, images)
+        if text.strip() or images:
+            idx = len(paragraphs_text)
+            paragraphs_text.append(text)
+            paragraphs_tag.append("p")
+            if images:
+                images_by_paragraph[idx] = images
+
+
 def _collect_blocks(
     root: etree._Element,
     paragraphs_text: List[str],
@@ -103,6 +151,10 @@ def _collect_blocks(
         name = _local_name(child)
 
         if name in DROP_TAGS:
+            continue
+
+        if name == "table":
+            _collect_table_blocks(child, paragraphs_text, paragraphs_tag, images_by_paragraph)
             continue
 
         if name in LIST_WRAPPER_TAGS:
